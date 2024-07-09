@@ -1,53 +1,10 @@
-// Generated on 2024-07-08 at 12:35 PM EDT
+// Generated on 2024-07-08 at 14:15 PM EDT
 
 import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse';
+import { db } from '../db';
 
-const DB_NAME = 'TinwareDB';
-const STORE_NAME = 'wordList';
 const CSV_URL = import.meta.env.VITE_REACT_APP_CSV_URL;
-
-const openDB = () => {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, 1);
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-    request.onupgradeneeded = (event: any) => {
-      const db = event.target.result;
-      db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-    };
-  });
-};
-
-const getFromIndexedDB = async () => {
-  const db: any = await openDB();
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, 'readonly');
-    const store = transaction.objectStore(STORE_NAME);
-    const request = store.get(STORE_NAME);
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-  });
-};
-
-const storeInIndexedDB = async (data: any) => {
-  const db: any = await openDB();
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, 'readwrite');
-    const store = transaction.objectStore(STORE_NAME);
-    const request = store.put({ id: STORE_NAME, data: data, timestamp: Date.now() });
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-  });
-};
-
-const clearCache = async () => {
-  const db: any = await openDB();
-  const transaction = db.transaction(STORE_NAME, 'readwrite');
-  const store = transaction.objectStore(STORE_NAME);
-  await store.clear();
-  console.log('Cache cleared');
-};
 
 interface DataInitializerProps {
   onDataLoaded: () => void;
@@ -60,9 +17,9 @@ const DataInitializer: React.FC<DataInitializerProps> = ({ onDataLoaded }) => {
   useEffect(() => {
     const fetchCSV = async () => {
       try {
-        const cachedData = await getFromIndexedDB();
+        const count = await db.wordList.count();
 
-        if (cachedData && cachedData.data && cachedData.data.length > 0) {
+        if (count > 0) {
           console.log('Using cached data');
           setIsLoading(false);
           onDataLoaded();
@@ -77,7 +34,7 @@ const DataInitializer: React.FC<DataInitializerProps> = ({ onDataLoaded }) => {
           complete: async (result) => {
             if (result.data && result.data.length > 0) {
               try {
-                await storeInIndexedDB(result.data);
+                await db.wordList.bulkAdd(result.data as any[]);
                 console.log('Data stored in IndexedDB');
                 onDataLoaded();
               } catch (dbError) {
@@ -111,4 +68,8 @@ const DataInitializer: React.FC<DataInitializerProps> = ({ onDataLoaded }) => {
   return null;
 };
 
-export { DataInitializer, getFromIndexedDB, clearCache };
+export const getFromIndexedDB = () => db.wordList.toArray();
+
+export const clearCache = () => db.wordList.clear();
+
+export { DataInitializer };
