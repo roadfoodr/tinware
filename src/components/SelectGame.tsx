@@ -16,7 +16,7 @@ const SelectGame: React.FC<SelectGameProps> = ({ topics, onSelectTopic }) => {
           onChange={(e) => onSelectTopic(e.target.value)}
           defaultValue=""
         >
-          <option value="" disabled>Select a topic</option>
+          <option value="" disabled>Select a challenge</option>
           {topics.map((topic, index) => (
             <option key={index} value={topic}>
               {topic}

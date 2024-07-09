@@ -1,3 +1,5 @@
+/* Generated on 2024-07-09 at 15:45 PM EDT */
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -66,4 +68,101 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+/* Styles for PlayGame component */
+.root, .answer-word {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.input-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1em;
+}
+
+.input-area input.pure-input-1-4 {
+  width: 2em;
+  height: 2em;
+  font-size: 1.5em;
+  text-align: center;
+  text-transform: uppercase;
+  margin: 0 0.5em;
+}
+
+.display-area {
+  margin-top: 1em;
+}
+
+.answer-row {
+  margin-bottom: 0.5em;
+  padding: 0.5em;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.answer-row .answer-word {
+  margin-right: 1em;
+  font-size: 1.2em;
+}
+
+.answer-row.valid {
+  background-color: rgba(0, 128, 0, 0.1);
+}
+
+.answer-row.valid .answer-word {
+  color: #00a000;
+}
+
+.answer-row.invalid {
+  background-color: rgba(128, 128, 128, 0.1);
+}
+
+.answer-row.invalid .answer-word {
+  color: #888;
+  text-decoration: line-through;
+}
+
+.answer-row.missed {
+  background-color: rgba(255, 0, 0, 0.1);
+}
+
+.answer-row.missed .answer-word {
+  color: #ff4040;
+}
+
+.success-message {
+  margin-top: 1em;
+  padding: 1em;
+  background-color: rgba(0, 128, 0, 0.1);
+  color: #00a000;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.error-message {
+  margin-top: 1em;
+  padding: 1em;
+  background-color: rgba(255, 0, 0, 0.1);
+  color: #ff4040;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+/* Additional styles for better UI */
+.pure-button {
+  margin-right: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+h2 {
+  margin-bottom: 1em;
+}
+
+.definition {
+  font-style: italic;
+  color: #888;
 }
