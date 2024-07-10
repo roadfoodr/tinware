@@ -1,4 +1,4 @@
-// Generated on 2024-07-09 at 18:15 PM EDT
+// Generated on 2024-07-10 at 15:35 PM EDT
 
 import React, { useState, useEffect, useRef } from 'react';
 import { WordItem } from '../db';
@@ -24,6 +24,8 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<SuccessMessage | null>(null);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
+  const [hint, setHint] = useState<string>('');
+  const [showHint, setShowHint] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -87,6 +89,13 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
     setErrorMessage(null);
     setSuccessMessage(null);
     setIsTransitioning(false);
+    setShowHint(false);
+
+    // Set the hint to the longest hint in the answerSet
+    const longestHint = newAnswerSet.reduce((longest, current) => 
+      current.hint && current.hint.length > longest.length ? current.hint : longest
+    , '');
+    setHint(longestHint);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,10 +145,9 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
       }));
     });
 
-    const invalidAnswers = displayedAnswers.filter(item => item.definition === 'Not a valid word in this lexicon');
-    const correctAnswers = answerSet.filter(item => item.answer !== '-');
+    const correctAnswers = answerSet.filter(item => item.answer !== '-' && item.definition);
     const identifiedCorrectAnswers = displayedAnswers.filter(item => 
-      item.definition !== 'Not a valid word in this lexicon' && item.answer !== '-'
+      item.definition && item.definition !== 'Not a valid word in this lexicon' && item.answer !== '-'
     );
     
     if (answerSet.every(item => item.answer === '-')) {
@@ -177,6 +185,16 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
     selectNewWord();
     onSkipWord();
     setTimeout(() => setIsTransitioning(false), 300); // Adjust the delay as needed
+  };
+
+  const handleShowHint = () => {
+    if (hint) {
+      setShowHint(true);
+    }
+    // Refocus the input field after showing the hint
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
   };
 
   if (errorMessage) {
@@ -217,9 +235,6 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
                 />
               )}
             </div>
-            {!showAllAnswers && (
-              <button className="pure-button" onClick={handleNoMoreWords}>No More Words</button>
-            )}
             <button 
               className="pure-button" 
               onClick={handleNextWord}
@@ -227,13 +242,28 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
             >
               {skipButtonLabel}
             </button>
+            {!showAllAnswers && (
+              <>
+                <button 
+                  className={`pure-button ${!hint ? 'pure-button-disabled' : ''}`} 
+                  onClick={handleShowHint}
+                  disabled={!hint}
+                >
+                  Show Hint
+                </button>
+                <button className="pure-button" onClick={handleNoMoreWords}>No More Words</button>
+              </>
+            )}
           </div>
         )}
         {successMessage && (
           <div className={`success-message ${successMessage.class}`}>{successMessage.text}</div>
         )}
         <div className="display-area">
-          {displayedAnswers.map((item, index) => (
+          {showHint && hint && (
+            <div className="hint-message">Hint: {hint}</div>
+          )}
+          {displayedAnswers.filter(item => item.definition).map((item, index) => (
             <div key={index} className={`answer-row ${
               item.definition === 'Not a valid word in this lexicon' ? 'invalid' :
               showAllAnswers && item.isRemaining ? 'missed' : 'valid'

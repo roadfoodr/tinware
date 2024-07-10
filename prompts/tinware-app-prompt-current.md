@@ -76,7 +76,7 @@ You are tasked with creating a React application called Tinware. The app reads a
      - Treat space input as clicking "No More Words".
      - Display valid and invalid entries in a display area below the input.
      - Use color-coding for answers: green for valid, dark gray with strikethrough for invalid, red for missed valid answers.
-     - Implement "No More Words" and "Skip Word" buttons.
+     - Implement "Skip Word", "Show Hint", and "No More Words" buttons in this order.
      - After clicking "No More Words", hide the input area and change the "Skip Word" button to "Next Word".
      - When the "Next Word" button is active, pressing the space key should have the same effect as clicking "Next Word".
      - Ensure no repeated rows in the display area.
@@ -89,13 +89,21 @@ You are tasked with creating a React application called Tinware. The app reads a
      - For words with no valid answers: "There are no letters that can go {before|after} {ROOT}." (with ROOT in uppercase and fixed-width font)
    - Error message for invalid words: "Not a valid word in this lexicon".
    - Implement a transition period when moving to the next word to prevent unintended actions:
+     - Ensure that the space key event for "Next Word" doesn't trigger the "No More Words" action on the new word.
      - Add an isTransitioning state variable.
      - Update the handleKeyPress effect to check for isTransitioning before triggering the next word action.
      - Create a handleNextWord function that sets isTransitioning to true, calls selectNewWord and onSkipWord, and uses setTimeout to set isTransitioning back to false after a short delay.
      - Disable the "Next Word" button during transitions.
-   - Update the success message styling:
-     - Use a light orange background for partial success ("You identified {count} out of {count} words").
-     - Keep the light green background for complete success.
+   - Implement a "Show Hint" feature:
+     - Add a "Show Hint" button between "Skip Word" and "No More Words".
+     - When clicked, display the hint above the revealed words with a light blue background.
+     - Prepend "Hint: " to the displayed hint text.
+     - If there's no hint available, gray out the "Show Hint" button and disable it.
+     - Ensure the input area remains focused after clicking the "Show Hint" button.
+   - Handle words without definitions:
+     - Include all roots in the answerSet, even if they don't have definitions.
+     - Only display and count words that have definitions when showing answers and calculating success.
+     - Filter out words without definitions when displaying the answer rows.
 
 8. App.tsx:
    - Compose the main application using NavBar, DataInitializer, SelectGame, and PlayGame components.
@@ -127,5 +135,6 @@ You are tasked with creating a React application called Tinware. The app reads a
       - Adjust the font sizes and colors for better readability.
       - Add spacing between buttons and other elements for a cleaner look.
       - Style the definition text to be italic and gray, distinguishing it from the answer word.
+      - Style the hint-message with a light blue background.
 
 Please generate the code for these files, ensuring that they work together to create a functional Tinware app. The app should load CSV data, store it in IndexedDB using Dexie, allow users to filter data by topic, implement the gameplay logic for the "AddOne" game type, and provide a way to clear the cached data.

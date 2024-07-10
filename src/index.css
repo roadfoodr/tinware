@@ -169,6 +169,15 @@ button:focus-visible {
   font-weight: bold;
 }
 
+.hint-message {
+  background-color: rgba(173, 216, 230, 0.2); /* Light blue background */
+  color: #4682B4; /* Steel blue text color */
+  padding: 0.8em;
+  margin-bottom: 1em;
+  border-radius: 4px;
+  font-style: italic;
+}
+
 /* Additional styles for better UI */
 .pure-button {
   margin-right: 0.5em;
