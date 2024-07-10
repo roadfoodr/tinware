@@ -25,4 +25,4 @@ dist-ssr
 
 # other
 .env
-src/old
+**/old
