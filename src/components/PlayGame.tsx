@@ -1,4 +1,4 @@
-// Generated on 2024-07-09 at 15:55 PM EDT
+// Generated on 2024-07-09 at 18:15 PM EDT
 
 import React, { useState, useEffect, useRef } from 'react';
 import { WordItem } from '../db';
@@ -10,6 +10,11 @@ interface PlayGameProps {
   selectedTopic: string;
 }
 
+interface SuccessMessage {
+  text: string | JSX.Element;
+  class: 'all-words' | 'some-words';
+}
+
 const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selectedTopic }) => {
   const [answerSet, setAnswerSet] = useState<WordItem[]>([]);
   const [userInput, setUserInput] = useState<string>('');
@@ -17,7 +22,8 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
   const [showAllAnswers, setShowAllAnswers] = useState<boolean>(false);
   const [skipButtonLabel, setSkipButtonLabel] = useState<string>('Skip Word');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<SuccessMessage | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -29,6 +35,21 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
       inputRef.current.focus();
     }
   }, [answerSet, showAllAnswers]);
+
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === ' ' && skipButtonLabel === 'Next Word' && !isTransitioning) {
+        event.preventDefault();
+        handleNextWord();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [skipButtonLabel, isTransitioning]);
 
   const selectNewWord = () => {
     if (data.length === 0) {
@@ -65,10 +86,21 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
     setSkipButtonLabel('Skip Word');
     setErrorMessage(null);
     setSuccessMessage(null);
+    setIsTransitioning(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value.slice(-1).toUpperCase();
+    
+    if (input === ' ') {
+      handleNoMoreWords();
+      return;
+    }
+
+    if (!/^[A-Z]$/.test(input)) {
+      return;
+    }
+
     setUserInput(input);
 
     if (input) {
@@ -79,7 +111,7 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
         const invalidAnswer: WordItem = {
           ...answerSet[0],
           answerWord: answerSet[0].subtopic === 'before' ? input + answerSet[0].root : answerSet[0].root + input,
-          definition: 'Not a valid Scrabble word',
+          definition: 'Not a valid word in this lexicon',
           answer: input
         };
         if (!displayedAnswers.some(displayed => displayed.answerWord === invalidAnswer.answerWord)) {
@@ -104,25 +136,47 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
       }));
     });
 
-    const invalidAnswers = displayedAnswers.filter(item => item.definition === 'Not a valid Scrabble word');
+    const invalidAnswers = displayedAnswers.filter(item => item.definition === 'Not a valid word in this lexicon');
+    const correctAnswers = answerSet.filter(item => item.answer !== '-');
+    const identifiedCorrectAnswers = displayedAnswers.filter(item => 
+      item.definition !== 'Not a valid word in this lexicon' && item.answer !== '-'
+    );
     
     if (answerSet.every(item => item.answer === '-')) {
-      setSuccessMessage(
-        <>
-          There are no letters that can go {answerSet[0].subtopic}{' '}
-          <span className="root">{answerSet[0].root.toUpperCase()}</span>.
-        </>
-      );
+      setSuccessMessage({
+        text: (
+          <>
+            There are no letters that can go {answerSet[0].subtopic}{' '}
+            <span className="root">{answerSet[0].root.toUpperCase()}</span>.
+          </>
+        ),
+        class: 'all-words'
+      });
       setDisplayedAnswers([{
         ...answerSet[0],
         answerWord: answerSet[0].root,
         isRemaining: false
       }]);
-    } else if (remainingAnswers.length === 0 && invalidAnswers.length === 0) {
-      setSuccessMessage("You correctly identified all the words!");
+    } else if (identifiedCorrectAnswers.length === correctAnswers.length) {
+      setSuccessMessage({
+        text: `You correctly identified all ${correctAnswers.length} words!`,
+        class: 'all-words'
+      });
+    } else {
+      setSuccessMessage({
+        text: `You identified ${identifiedCorrectAnswers.length} out of ${correctAnswers.length} words`,
+        class: 'some-words'
+      });
     }
 
-    setSkipButtonLabel('Next word');
+    setSkipButtonLabel('Next Word');
+  };
+
+  const handleNextWord = () => {
+    setIsTransitioning(true);
+    selectNewWord();
+    onSkipWord();
+    setTimeout(() => setIsTransitioning(false), 300); // Adjust the delay as needed
   };
 
   if (errorMessage) {
@@ -139,7 +193,7 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
         <h2>Challenge: {selectedTopic}</h2>
         {gametype === "AddOne" && (
           <div>
-            <p>Which letters go {answerSet[0].subtopic} the following word stem?</p>
+            <p>Which letters go <strong>{answerSet[0].subtopic}</strong> the following word stem?</p>
             <div className="input-area">
               {answerSet[0].subtopic === 'before' && !showAllAnswers && (
                 <input
@@ -148,7 +202,7 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
                   value={userInput}
                   onChange={handleInputChange}
                   maxLength={1}
-                  className="pure-input-1-4"
+                  className="pure-input-1-6"
                 />
               )}
               <span className="root">{answerSet[0].root.toUpperCase()}</span>
@@ -159,26 +213,29 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
                   value={userInput}
                   onChange={handleInputChange}
                   maxLength={1}
-                  className="pure-input-1-4"
+                  className="pure-input-1-6"
                 />
               )}
             </div>
             {!showAllAnswers && (
               <button className="pure-button" onClick={handleNoMoreWords}>No More Words</button>
             )}
-            <button className="pure-button" onClick={() => {
-              selectNewWord();
-              onSkipWord();
-            }}>{skipButtonLabel}</button>
+            <button 
+              className="pure-button" 
+              onClick={handleNextWord}
+              disabled={isTransitioning}
+            >
+              {skipButtonLabel}
+            </button>
           </div>
         )}
         {successMessage && (
-          <div className="success-message">{successMessage}</div>
+          <div className={`success-message ${successMessage.class}`}>{successMessage.text}</div>
         )}
         <div className="display-area">
           {displayedAnswers.map((item, index) => (
             <div key={index} className={`answer-row ${
-              item.definition === 'Not a valid Scrabble word' ? 'invalid' :
+              item.definition === 'Not a valid word in this lexicon' ? 'invalid' :
               showAllAnswers && item.isRemaining ? 'missed' : 'valid'
             }`}>
               <span className="answer-word">{item.answerWord.toUpperCase()}</span>
