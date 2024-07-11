@@ -13,7 +13,7 @@ interface WordItem {
   answerWord: string;
   hint: string;
   definition: string;
-  canAddS: number;
+  canAddS: string;
   // Add other fields as necessary
 }
 

@@ -1,4 +1,4 @@
-# Updated Tinware App Development Prompt
+# Final Updated Tinware App Development Prompt
 
 You are tasked with creating a React application called Tinware. The app reads a CSV datafile from an S3 bucket and stores it in IndexedDB using Dexie. Please generate code for the following files, adhering to these specifications:
 
@@ -9,9 +9,22 @@ You are tasked with creating a React application called Tinware. The app reads a
    │   ├── NavBar.tsx
    │   ├── Settings.tsx
    │   ├── SelectGame.tsx
-   │   └── PlayGame.tsx
+   │   └── PlayGame
+   │       ├── PlayGame.tsx
+   │       ├── GamePrompt.tsx
+   │       ├── InputArea.tsx
+   │       ├── ControlButtons.tsx
+   │       ├── MessageArea.tsx
+   │       └── DisplayArea.tsx
+   ├── hooks
+   │   └── useGameLogic.ts
    ├── services
    │   └── DataInitializer.tsx
+   ├── utils
+   │   ├── answerProcessor.ts
+   │   └── appHelpers.ts
+   ├── types
+   │   └── gameTypes.ts
    ├── App.tsx
    ├── main.tsx
    └── db.ts
@@ -46,7 +59,27 @@ You are tasked with creating a React application called Tinware. The app reads a
      ```
    - Export the database instance for use in other components.
 
-4. DataInitializer.tsx:
+4. gameTypes.ts:
+   - Define and export interfaces for PlayGameProps, SuccessMessage, ErrorMessage, HintMessage, and GameState.
+   - Ensure SuccessMessage.text, ErrorMessage.text, and HintMessage.text are of type string.
+   - Update GameState to use these new message types.
+
+5. answerProcessor.ts:
+   - Implement utility functions for processing answers and calculating success messages.
+   - Include functions: processAnswer, processRemainingAnswers, and calculateSuccessMessage.
+   - Ensure calculateSuccessMessage returns a SuccessMessage object.
+
+6. appHelpers.ts:
+   - Implement helper functions for App.tsx: fetchTopics, selectTopic, restartGame, and clearAppCache.
+   - These functions should handle topic fetching, topic selection, game restarting, and cache clearing operations.
+
+7. useGameLogic.ts:
+   - Implement a custom hook that encapsulates the game logic.
+   - Use the utility functions from answerProcessor.ts.
+   - Include functions for selecting a new word, handling input changes, managing the game state, and processing the end of a round.
+   - Update the state management to use the new message types (ErrorMessage, SuccessMessage, HintMessage).
+
+8. DataInitializer.tsx:
    - Use Dexie for all database operations.
    - Fetch CSV data from an S3 bucket using the URL stored in the environment variable VITE_REACT_APP_CSV_URL.
    - Parse the CSV data using the Papa Parse library.
@@ -54,87 +87,87 @@ You are tasked with creating a React application called Tinware. The app reads a
    - Implement a clearCache function to remove data from IndexedDB.
    - Export the DataInitializer component, getFromIndexedDB, and clearCache functions.
 
-5. NavBar.tsx:
+9. NavBar.tsx:
    - Create a navbar component that sticks to the top of the browser window.
    - Include the title "TINWARE" in a bold, fixed-width, serif (typewriter-style) font.
    - Include a dropdown "Settings" menu at the top right of the navbar.
-   - In the Settings menu, include the "Clear Cache" function that is exported by the DataInitializer component.
+   - In the Settings menu, include the "Clear Cache" function.
 
-6. SelectGame.tsx:
-   - Use Dexie to fetch unique topics from the stored data.
-   - Implement a dropdown menu to select topics, adding an option for "All Words".
-   - Once a topic is selected by the user, the SelectGame component will disappear and be replaced by PlayGame.
+10. SelectGame.tsx:
+    - Implement a dropdown menu to select topics, including an "All Words" option.
+    - Use the topics provided via props.
 
-7. PlayGame.tsx:
-   - Implement the main gameplay logic for different game types, starting with "AddOne".
-   - For the "AddOne" game type:
-     - Display the prompt "Which letters go [before|after] the following word stem?" with [before|after] in bold.
-     - Show the root word in uppercase and fixed-width font.
-     - Provide an input area for a single letter, positioned before or after the root based on the current subtopic.
-     - Validate user input against the set of unique values in the "answer" column of the current answerSet.
-     - Ignore input that is not an alphabetic character (upper or lower case).
-     - Treat space input as clicking "No More Words".
-     - Display valid and invalid entries in a display area below the input.
-     - Use color-coding for answers: green for valid, dark gray with strikethrough for invalid, red for missed valid answers.
-     - Implement "Skip Word", "Show Hint", and "No More Words" buttons in this order.
-     - After clicking "No More Words", hide the input area and change the "Skip Word" button to "Next Word".
-     - When the "Next Word" button is active, pressing the space key should have the same effect as clicking "Next Word".
-     - Ensure no repeated rows in the display area.
-   - Use a useRef hook to automatically focus the input field when a new word is selected.
-   - Implement case-insensitive validation for user input.
-   - Display all words (root and answerWords) in uppercase and fixed-width font.
-   - Update success messages:
-     - When all words are correctly identified: "You correctly identified all {total count of correct options} words!"
-     - When some words are identified but not all: "You identified {count of words identified} out of {total count of correct options} words"
-     - For words with no valid answers: "There are no letters that can go {before|after} {ROOT}." (with ROOT in uppercase and fixed-width font)
-   - Error message for invalid words: "Not a valid word in this lexicon".
-   - Implement a transition period when moving to the next word to prevent unintended actions:
-     - Ensure that the space key event for "Next Word" doesn't trigger the "No More Words" action on the new word.
-     - Add an isTransitioning state variable.
-     - Update the handleKeyPress effect to check for isTransitioning before triggering the next word action.
-     - Create a handleNextWord function that sets isTransitioning to true, calls selectNewWord and onSkipWord, and uses setTimeout to set isTransitioning back to false after a short delay.
-     - Disable the "Next Word" button during transitions.
-   - Implement a "Show Hint" feature:
-     - Add a "Show Hint" button between "Skip Word" and "No More Words".
-     - When clicked, display the hint above the revealed words with a light blue background.
-     - Prepend "Hint: " to the displayed hint text.
-     - If there's no hint available, gray out the "Show Hint" button and disable it.
-     - Ensure the input area remains focused after clicking the "Show Hint" button.
-   - Handle words without definitions:
-     - Include all roots in the answerSet, even if they don't have definitions.
-     - Only display and count words that have definitions when showing answers and calculating success.
-     - Filter out words without definitions when displaying the answer rows.
+11. PlayGame.tsx:
+    - Compose the main game interface using GamePrompt, InputArea, ControlButtons, MessageArea, and DisplayArea components.
+    - Use the useGameLogic hook to manage game state and logic.
+    - Handle the space key press event for moving to the next word when appropriate.
 
-8. App.tsx:
-   - Compose the main application using NavBar, DataInitializer, SelectGame, and PlayGame components.
-   - Manage the dataLoaded state to control when SelectGame and PlayGame are rendered.
-   - Implement handleSelectTopic function to fetch and filter data based on the selected topic.
-   - Handle cases where no data is available for a selected topic.
-   - Implement a handleRestart function to reset the game state.
-   - Implement a handleClearCache function to clear the database and reset the app state.
-   - Pass the selectedTopic prop to the PlayGame component.
+12. GamePrompt.tsx:
+    - Display the challenge instructions and word stem.
+    - Show the selected topic and game type.
 
-9. main.tsx:
-   - Set up the React application entry point.
-   - Import and use PureCSS styles.
-   - Import and use FontAwesome.
+13. InputArea.tsx:
+    - Implement an input area for a single letter, positioned before or after the root based on the current subtopic.
+    - Automatically focus the input field when a new word is selected.
 
-10. Styling:
-    - Update index.css to support the PlayGame requirements:
-      - Use a bold, fixed-width, serif (typewriter-style) font for root and answerWord displays.
-      - Implement color-coding for different answer types:
-        - Valid answers: light green background, dark green text
-        - Invalid answers: light gray background, dark gray text, strikethrough
-        - Missed answers: light red background, dark red text
-      - Style the success-message classes:
-        - all-words: light green background, dark green text
-        - some-words: light orange background, dark orange text
-      - Style the error-message class with a light red background and dark red text.
-      - Improve the styling of the input area, making the input field more prominent and centered.
-      - Enhance the appearance of the answer rows by adding padding, border-radius, and a subtle background color.
-      - Adjust the font sizes and colors for better readability.
-      - Add spacing between buttons and other elements for a cleaner look.
-      - Style the definition text to be italic and gray, distinguishing it from the answer word.
-      - Style the hint-message with a light blue background.
+14. ControlButtons.tsx:
+    - Implement "Skip Word"/"Next Word", "Show Hint", and "No More Words" buttons.
+    - Handle button states based on the current game state.
+
+15. MessageArea.tsx:
+    - Display error messages, success messages, and hints.
+    - Handle formatting of the root word for the "no letters" message.
+    - Use the new ErrorMessage, SuccessMessage, and HintMessage types.
+
+16. DisplayArea.tsx:
+    - Show the list of answered and remaining words.
+    - Use color-coding for answers: green for valid, dark gray with strikethrough for invalid, red for missed valid answers.
+
+17. App.tsx:
+    - Compose the main application using NavBar, DataInitializer, SelectGame, and PlayGame components.
+    - Use the helper functions from appHelpers.ts for topic fetching, selection, game restarting, and cache clearing.
+    - Manage the overall application state and render the appropriate components based on the current state.
+
+18. main.tsx:
+    - Set up the React application entry point.
+    - Import and use PureCSS styles.
+    - Import and use FontAwesome.
+
+19. Styling (index.css):
+    - Use a bold, fixed-width, serif (typewriter-style) font for root and answerWord displays.
+    - Implement color-coding for different answer types:
+      - Valid answers: light green background, dark green text
+      - Invalid answers: light gray background, dark gray text, strikethrough
+      - Missed answers: light red background, dark red text
+    - Style the success-message classes:
+      - all-words: light green background, dark green text
+      - some-words: light orange background, dark orange text
+    - Style the error-message class with a light red background and dark red text.
+    - Style the hint-message with a light blue background.
+    - Improve the styling of the input area, making it prominent and centered.
+    - Enhance the appearance of the answer rows with padding, border-radius, and subtle background colors.
+    - Ensure responsive design for mobile friendliness.
+
+20. Game Logic Requirements:
+    - Implement the gameplay logic for the "AddOne" game type:
+      - Display the prompt "Which letters go [before|after] the following word stem?" with [before|after] in bold.
+      - Show the root word in uppercase and fixed-width font.
+      - Validate user input against the set of unique values in the "answer" column of the current answerSet.
+      - Ignore input that is not an alphabetic character (upper or lower case).
+      - Treat space input as clicking "No More Words".
+      - Display valid and invalid entries in the display area.
+      - After clicking "No More Words", hide the input area and change the "Skip Word" button to "Next Word".
+      - When the "Next Word" button is active, pressing the space key should have the same effect as clicking "Next Word".
+      - Ensure no repeated rows in the display area.
+    - Implement case-insensitive validation for user input.
+    - Display all words (root and answerWords) in uppercase and fixed-width font.
+    - Update success messages as specified in the answerProcessor.ts file.
+    - Implement a transition period when moving to the next word to prevent unintended actions.
+    - Implement a "Show Hint" feature:
+      - When clicked, display the hint in the MessageArea component.
+      - If there's no hint available, gray out the "Show Hint" button and disable it.
+    - Handle words without definitions:
+      - Include all roots in the answerSet, even if they don't have definitions.
+      - Only display and count words that have definitions when showing answers and calculating success.
 
 Please generate the code for these files, ensuring that they work together to create a functional Tinware app. The app should load CSV data, store it in IndexedDB using Dexie, allow users to filter data by topic, implement the gameplay logic for the "AddOne" game type, and provide a way to clear the cached data.

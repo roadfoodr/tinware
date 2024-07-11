@@ -1,11 +1,12 @@
-// Generated on 2024-07-08 at 15:35 PM EDT
+// Generated on 2024-07-10 at 21:05 PM EDT
 
 import React, { useState, useEffect } from 'react';
 import NavBar from './components/NavBar';
-import { DataInitializer, getFromIndexedDB, clearCache } from './services/DataInitializer';
+import { DataInitializer } from './services/DataInitializer';
 import SelectGame from './components/SelectGame';
-import PlayGame from './components/PlayGame';
-import { db, WordItem } from './db';
+import PlayGame from './components/PlayGame/PlayGame';
+import { WordItem } from './db';
+import { fetchTopics, selectTopic, restartGame, clearAppCache } from './utils/appHelpers';
 
 const App: React.FC = () => {
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -16,54 +17,31 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (dataLoaded) {
-      fetchTopics();
+      fetchTopics().then(setTopics);
     }
   }, [dataLoaded]);
 
-  const fetchTopics = async () => {
-    const allData = await getFromIndexedDB();
-    if (allData.length > 0) {
-      const allTopics = Array.from(new Set(allData.map(item => item.topic)));
-      setTopics(['All Words', ...allTopics]);
-    }
-  };
-
   const handleSelectTopic = async (topic: string) => {
     setSelectedTopic(topic);
-    let filteredData: WordItem[];
-    if (topic === 'All Words') {
-      filteredData = await db.wordList.toArray();
-    } else {
-      filteredData = await db.wordList.where('topic').equals(topic).toArray();
-    }
-    
-    if (filteredData.length > 0) {
-      setSelectedGameType(filteredData[0].gametype);
-    } else {
-      setSelectedGameType(null);
-    }
-    
+    const { filteredData, selectedGameType } = await selectTopic(topic);
+    setSelectedGameType(selectedGameType);
     setGameData(filteredData);
   };
 
   const handleRestart = () => {
-    setSelectedTopic(null);
-    setSelectedGameType(null);
-    setGameData([]);
+    const { selectedTopic, selectedGameType, gameData } = restartGame();
+    setSelectedTopic(selectedTopic);
+    setSelectedGameType(selectedGameType);
+    setGameData(gameData);
   };
 
   const handleClearCache = async () => {
-    await clearCache();
-    setDataLoaded(false);
-    setTopics([]);
-    setSelectedTopic(null);
-    setSelectedGameType(null);
-    setGameData([]);
-  };
-
-  const handleSkipWord = () => {
-    // This function is passed to PlayGame and called when "Skip Word" is clicked
-    // The logic for selecting a new word is now handled within PlayGame
+    const { dataLoaded, topics, selectedTopic, selectedGameType, gameData } = await clearAppCache();
+    setDataLoaded(dataLoaded);
+    setTopics(topics);
+    setSelectedTopic(selectedTopic);
+    setSelectedGameType(selectedGameType);
+    setGameData(gameData);
   };
 
   return (
@@ -78,12 +56,12 @@ const App: React.FC = () => {
         )}
         {dataLoaded && selectedTopic && selectedGameType && gameData.length > 0 && (
           <PlayGame
-          data={gameData}
-          gametype={selectedGameType}
-          onSkipWord={handleSkipWord}
-          selectedTopic={selectedTopic}
-        />
-      )}
+            data={gameData}
+            gametype={selectedGameType}
+            onSkipWord={() => {}} // This is now handled internally by PlayGame
+            selectedTopic={selectedTopic}
+          />
+        )}
         {dataLoaded && selectedTopic && gameData.length === 0 && (
           <div>No data available for the selected topic.</div>
         )}
