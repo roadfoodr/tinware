@@ -1,6 +1,6 @@
 # TINWARE
 
-TINWARE is a React-based web application designed to help users practice and improve their knowledge of Scrabble word lists through interactive word games.
+TINWARE is a React-based web application designed to help users practice and improve knowledge of Scrabble word lists through interactive word games.
 
 ## How to Play
 
@@ -8,7 +8,7 @@ TINWARE is a React-based web application designed to help users practice and imp
 2. You'll be presented with a word stem and asked to add a letter either before or after it.
 3. Type a letter to submit your answer.
 4. Use the "Show Hint" button if you need help.
-5. Click "No More Words" when you can't think of any more valid words.
+5. Click "No More Words" when you can't think of any more valid words or your entry is complete.
 6. Click "Next Word" or press the spacebar to move to the next challenge.
 
 ## Technologies Used
