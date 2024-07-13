@@ -73,7 +73,7 @@ You are tasked with creating a React application called Tinware. The app reads a
 5. gameTypes.ts:
    - Define and export interfaces for PlayGameProps, SuccessMessage, ErrorMessage, HintMessage, and GameState.
    - Ensure SuccessMessage.text, ErrorMessage.text, and HintMessage.text are of type string.
-   - Update GameState to use these new message types.
+   - Update GameState to include a showRetry property of type boolean.
 
 6. answerProcessor.ts:
    - Implement utility functions for processing answers and calculating success messages.
@@ -89,6 +89,7 @@ You are tasked with creating a React application called Tinware. The app reads a
    - Implement a custom hook that encapsulates the game logic.
    - Use the utility functions from answerProcessor.ts.
    - Include functions for selecting a new word, handling input changes, managing the game state, and processing the end of a round.
+   - Implement a handleRetry function that resets the game state using the current answer set.
    - Update the state management to use the new message types (ErrorMessage, SuccessMessage, HintMessage).
    - Ensure new answers are added to the beginning of the displayedAnswers array.
 
@@ -114,6 +115,7 @@ You are tasked with creating a React application called Tinware. The app reads a
     - Compose the main game interface using GamePrompt, InputArea, ControlButtons, MessageArea, and DisplayArea components.
     - Use the useGameLogic hook to manage game state and logic.
     - Handle the space key press event for moving to the next word when appropriate.
+    - Pass the showRetry prop to ControlButtons.
 
 13. GamePrompt.tsx:
     - Display the challenge instructions and word stem.
@@ -124,8 +126,9 @@ You are tasked with creating a React application called Tinware. The app reads a
     - Automatically focus the input field when a new word is selected.
 
 15. ControlButtons.tsx:
-    - Implement "Skip Word"/"Next Word", "Show Hint", and "No More Words" buttons.
+    - Implement "Skip Word"/"Next Word", "Show Hint", "No More Words", and "Retry" buttons.
     - Handle button states based on the current game state.
+    - Show the "Retry" button only when showRetry is true.
 
 16. MessageArea.tsx:
     - Display error messages, success messages, and hints.
@@ -151,15 +154,8 @@ You are tasked with creating a React application called Tinware. The app reads a
 
 20. Styling (index.css):
     - Use a bold, fixed-width, serif (typewriter-style) font for root and answerWord displays.
-    - Implement color-coding for different answer types:
-      - Valid answers: light green background, dark green text
-      - Invalid answers: light gray background, dark gray text, strikethrough
-      - Missed answers: light red background, dark red text
-    - Style the success-message classes:
-      - all-words: light green background, dark green text
-      - some-words: light orange background, dark orange text
-    - Style the error-message class with a light red background and dark red text.
-    - Style the hint-message with a light blue background.
+    - Implement color-coding for different answer types as specified in DisplayArea.tsx.
+    - Style the success-message, error-message, and hint-message classes appropriately.
     - Improve the styling of the input area, making it prominent and centered.
     - Enhance the appearance of the answer rows with padding, border-radius, and subtle background colors.
     - Ensure responsive design for mobile friendliness.
@@ -167,29 +163,17 @@ You are tasked with creating a React application called Tinware. The app reads a
     - Apply the root class styling to the "can add S" text, but with a smaller font size.
 
 21. Game Logic Requirements:
-    - Implement the gameplay logic for the "AddOne" game type:
-      - Display the prompt "Which letters go [before|after] the following word stem?" with [before|after] in bold.
-      - Show the root word in uppercase and fixed-width font.
-      - Validate user input against the set of unique values in the "answer" column of the current answerSet.
-      - Ignore input that is not an alphabetic character (upper or lower case).
-      - Treat space input as clicking "No More Words".
-      - Display valid and invalid entries in the display area.
-      - After clicking "No More Words", hide the input area and change the "Skip Word" button to "Next Word".
-      - When the "Next Word" button is active, pressing the space key should have the same effect as clicking "Next Word".
-      - Ensure no repeated rows in the display area.
+    - Implement the gameplay logic for the "AddOne" game type as previously specified.
     - Implement case-insensitive validation for user input.
     - Display all words (root and answerWords) in uppercase and fixed-width font.
     - Update success messages as specified in the answerProcessor.ts file.
-    - Implement a transition period when moving to the next word to prevent unintended actions.
-    - Implement a "Show Hint" feature:
-      - When clicked, display the hint in the MessageArea component.
-      - If there's no hint available, gray out the "Show Hint" button and disable it.
-    - Handle words without definitions:
-      - Include all roots in the answerSet, even if they don't have definitions.
-      - Only display and count words that have definitions when showing answers and calculating success.
+    - Implement a transition period when moving to the next word or retrying to prevent unintended actions.
+    - Implement a "Show Hint" feature as previously specified.
+    - Handle words without definitions as previously specified.
     - Add new answers to the beginning of the displayedAnswers array.
     - Use the LEXICON_NAME from the config when displaying "Not a valid word" messages.
     - Implement hyperlinks for valid and missed answer words, linking to the Merriam-Webster Scrabble dictionary.
     - Open dictionary links in a new browser window/tab without losing the game state.
+    - Implement a "Retry" feature that allows users to restart the current word set after selecting "No More Words".
 
-Please generate the code for these files, ensuring that they work together to create a functional Tinware app. The app should load CSV data, store it in IndexedDB using Dexie, allow users to filter data by topic, implement the gameplay logic for the "AddOne" game type, and provide a way to clear the cached data.
+Please generate the code for these files, ensuring that they work together to create a functional Tinware app. The app should load CSV data, store it in IndexedDB using Dexie, allow users to filter data by topic, implement the gameplay logic for the "AddOne" game type, provide a way to clear the cached data, and include the new "Retry" functionality.

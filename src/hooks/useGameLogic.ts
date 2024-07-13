@@ -1,4 +1,4 @@
-// Generated on 2024-07-13 at 10:45 AM EDT
+// Generated on 2024-07-13 at 17:45 PM EDT
 
 import { useState, useEffect } from 'react';
 import { WordItem } from '../db';
@@ -18,6 +18,7 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
     showHint: false,
     isTransitioning: false,
     shouldFocusInput: false,
+    showRetry: false,
   });
 
   useEffect(() => {
@@ -53,7 +54,11 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
       item => item.subtopic === selectedSubtopic && item.root === selectedRoot
     ).map(formatAnswer);
 
-    if (newAnswerSet.length === 0) {
+    setNewGameState(newAnswerSet);
+  };
+
+  const setNewGameState = (answerSet: FormattedAnswer[]) => {
+    if (answerSet.length === 0) {
       setGameState(prev => ({
         ...prev,
         errorMessage: { text: "No valid answers found for the selected combination." },
@@ -61,11 +66,11 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
       return;
     }
 
-    const longestHint = newAnswerSet.reduce((longest, current) => 
+    const longestHint = answerSet.reduce((longest, current) => 
       current.hint && current.hint.length > longest.length ? current.hint : longest
     , '');
     
-    const validAnswersCount = newAnswerSet.filter(item => 
+    const validAnswersCount = answerSet.filter(item => 
       item.definition && 
       item.definition !== 'Not a valid word in this lexicon' &&
       item.answer !== '-'
@@ -73,7 +78,7 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
     const defaultHint = `There are ${validAnswersCount} possibilities.`;
 
     setGameState({
-      answerSet: newAnswerSet,
+      answerSet: answerSet,
       userInput: '',
       displayedAnswers: [],
       showAllAnswers: false,
@@ -84,6 +89,7 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
       hint: longestHint ? { text: longestHint } : { text: defaultHint },
       showHint: false,
       shouldFocusInput: true,
+      showRetry: false,
     });
   };
 
@@ -109,7 +115,7 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
         return {
           ...prev,
           userInput: '',
-          displayedAnswers: [newAnswer, ...prev.displayedAnswers], // Add new answer to the beginning of the array
+          displayedAnswers: [newAnswer, ...prev.displayedAnswers],
         };
       }
 
@@ -120,7 +126,7 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
   const handleNoMoreWords = () => {
     setGameState(prev => {
       const remainingAnswers = processRemainingAnswers(prev.answerSet, prev.displayedAnswers);
-      const newDisplayedAnswers = [...remainingAnswers, ...prev.displayedAnswers]; // Add remaining answers to the beginning
+      const newDisplayedAnswers = [...remainingAnswers, ...prev.displayedAnswers];
       const successMessage = calculateSuccessMessage(prev.answerSet, newDisplayedAnswers);
 
       return {
@@ -129,6 +135,7 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
         displayedAnswers: newDisplayedAnswers,
         successMessage,
         skipButtonLabel: 'Next Word',
+        showRetry: true,
       };
     });
   };
@@ -138,6 +145,22 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
     selectNewWord();
     onSkipWord();
     setTimeout(() => setGameState(prev => ({ ...prev, isTransitioning: false })), 300);
+  };
+
+  const handleRetry = () => {
+    setGameState(prev => {
+      const retryAnswerSet = [...prev.answerSet];
+      return {
+        ...prev,
+        isTransitioning: true,
+        shouldFocusInput: true,
+      };
+    });
+    
+    setTimeout(() => {
+      setNewGameState(gameState.answerSet);
+      setGameState(prev => ({ ...prev, isTransitioning: false }));
+    }, 300);
   };
 
   const handleShowHint = () => {
@@ -157,6 +180,7 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
     handleInputChange,
     handleNoMoreWords,
     handleNextWord,
+    handleRetry,
     handleShowHint,
     resetShouldFocusInput,
   };

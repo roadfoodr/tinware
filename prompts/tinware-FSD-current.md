@@ -152,9 +152,17 @@ When user indicates no more words or all valid words have been found:
 - Format: `[WORD]: [Definition]`
 - Remaining words are added to the beginning of the display list
 
+#### 5.3.3 Retry Option
+- After "No More Words" is selected, a "Retry" button becomes visible
+- When clicked, it resets the game state using the current answer set, allowing the user to try again with the same word
+
 ### 5.4 Transition to Next Word
 - Brief transition period (300ms) where input is disabled
 - New word stem is selected and displayed
+
+### 5.5 Retry Transition
+- Brief transition period (300ms) where input is disabled
+- Same word stem is reset and displayed
 
 ## 6. Error Handling
 
@@ -211,4 +219,4 @@ The UI should adapt to different screen sizes:
 - Smaller font size than the answer word
 - Color-coded based on answer status (valid, missed, or default)
 
-This Functional Specification Document provides a detailed breakdown of Tinware's functionality, with a particular focus on the messaging system, user interactions, and styling in various scenarios. It outlines the specific behaviors, error handling, and user interface elements that make up the Tinware experience.
+This Functional Specification Document provides a detailed breakdown of Tinware's functionality, with a particular focus on the messaging system, user interactions, and styling in various scenarios. It outlines the specific behaviors, error handling, and user interface elements that make up the Tinware experience, including the new "Retry" functionality.

@@ -53,6 +53,10 @@ The primary purpose of Tinware is to:
 - Option to clear cached data
 - Potential for future customization options
 
+### 4.9 Retry Functionality
+- Option to retry the current word set after viewing all answers
+- Allows users to practice with challenging word sets
+
 ## 5. User Flow and Gameplay
 
 ### 5.1 Starting a Game
@@ -73,12 +77,17 @@ The primary purpose of Tinware is to:
 1. User clicks "No More Words" or the system detects no more valid words
 2. System reveals any remaining valid words at the top of the list
 3. Display success message with performance summary
-4. "Next Word" button becomes available
+4. "Next Word" and "Retry" buttons become available
 
 ### 5.4 Transitioning to Next Word
 1. User clicks "Next Word" or presses the space bar
 2. Brief transition period
 3. New word stem is displayed, and the gameplay loop restarts
+
+### 5.5 Retrying Current Word
+1. User clicks "Retry"
+2. Brief transition period
+3. Same word stem is reset and displayed, and the gameplay loop restarts with the current word set
 
 ## 6. Feedback and Messaging
 
@@ -145,13 +154,15 @@ The primary purpose of Tinware is to:
 - Leaderboards and social features
 - Customizable difficulty levels
 - Integration with educational curricula
+- Expanded retry functionality, such as retry counters or performance tracking across retries
 
 ## 10. Success Metrics
 
-- User engagement (time spent playing, number of rounds completed)
+- User engagement (time spent playing, number of rounds completed, number of retries)
 - Learning outcomes (improvement in word recognition and vocabulary over time)
 - User retention and return rate
 - User satisfaction (ratings, reviews)
 - Frequency of dictionary lookups
+- Retry usage and its impact on user performance
 
-This PRD outlines the core features and user experience of Tinware, focusing on creating an engaging and educational word game. The document provides a clear vision for the product while allowing room for future enhancements and iterations based on user feedback and educational needs.
+This PRD outlines the core features and user experience of Tinware, focusing on creating an engaging and educational word game. The document provides a clear vision for the product while allowing room for future enhancements and iterations based on user feedback and educational needs, including the new retry functionality.

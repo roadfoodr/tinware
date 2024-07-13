@@ -1,4 +1,4 @@
-// Generated on 2024-07-10 at 22:00 PM EDT
+// Generated on 2024-07-13 at 17:15 PM EDT
 
 import { WordItem } from '../db';
 
@@ -33,4 +33,6 @@ export interface GameState {
   hint: HintMessage | null;
   showHint: boolean;
   isTransitioning: boolean;
+  shouldFocusInput: boolean;
+  showRetry: boolean;
 }
