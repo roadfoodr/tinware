@@ -1,4 +1,4 @@
-// Generated on 2024-07-13 at 22:15 PM EDT
+// Generated on 2024-07-14 at 19:00 PM EDT
 
 import { useState, useEffect } from 'react';
 import { WordItem } from '../db';
@@ -116,10 +116,18 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
           ...prev,
           userInput: '',
           displayedAnswers: [newAnswer, ...prev.displayedAnswers],
+          errorMessage: null,
+          successMessage: null, // Remove the success message for valid words
+          showHint: false, // Hide hint when a new answer is processed
         };
       }
 
-      return prev;
+      return {
+        ...prev,
+        errorMessage: { text: `Not a valid word: ${input}${prev.answerSet[0].root}` },
+        successMessage: null,
+        showHint: false, // Hide hint when an invalid answer is processed
+      };
     });
   };
 
@@ -136,6 +144,7 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
         successMessage,
         skipButtonLabel: 'Next Word',
         showRetry: true,
+        showHint: false, // Hide hint when showing all answers
       };
     });
   };
@@ -167,6 +176,8 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
     setGameState(prev => ({ 
       ...prev, 
       showHint: true,
+      errorMessage: null,
+      successMessage: null,
       shouldFocusInput: true
     }));
   };

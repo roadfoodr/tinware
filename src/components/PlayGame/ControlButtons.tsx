@@ -1,4 +1,4 @@
-// Generated on 2024-07-13 at 16:45 PM EDT
+// Generated on 2024-07-14 at 14:45 PM EDT
 
 import React from 'react';
 
@@ -7,7 +7,7 @@ interface ControlButtonsProps {
   isTransitioning: boolean;
   showAllAnswers: boolean;
   showRetry: boolean;
-  hint: string;
+  showHint: boolean;
   onSkip: () => void;
   onRetry: () => void;
   onShowHint: () => void;
@@ -19,7 +19,7 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
   isTransitioning,
   showAllAnswers,
   showRetry,
-  hint,
+  showHint,
   onSkip,
   onRetry,
   onShowHint,
@@ -46,13 +46,19 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
       {!showAllAnswers && (
         <>
           <button 
-            className={`pure-button ${!hint ? 'pure-button-disabled' : ''}`} 
+            className="pure-button" 
             onClick={onShowHint}
-            disabled={!hint}
+            disabled={isTransitioning || showHint}
           >
             Show Hint
           </button>
-          <button className="pure-button" onClick={onNoMoreWords}>No More Words</button>
+          <button 
+            className="pure-button" 
+            onClick={onNoMoreWords}
+            disabled={isTransitioning}
+          >
+            No More Words
+          </button>
         </>
       )}
     </div>

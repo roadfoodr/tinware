@@ -40,10 +40,11 @@ The primary purpose of Tinware is to:
 
 ### 4.5 Hint System
 - Optional hints to assist players when stuck
+- "Show Hint" button is disabled when a hint is already displayed
 
 ### 4.6 Progress Tracking
 - Display of correct answers and remaining possibilities
-- Most recent answers displayed at the top of the list
+- Color-coded answers for easy identification (green for valid, gray for invalid, red for missed)
 
 ### 4.7 Dictionary Integration
 - Valid and missed answer words are hyperlinked to an online Scrabble dictionary
@@ -104,10 +105,12 @@ The primary purpose of Tinware is to:
 - Display the number of words correctly identified
 - Show any missed words
 - Provide encouraging message based on performance
+- Use proper pluralization (e.g., "word" vs "words")
 
 ### 6.4 Hints
 - Available on user request
 - Provide subtle clues without giving away answers
+- "Show Hint" button is disabled when a hint is already displayed
 
 ## 7. Visual Design
 
