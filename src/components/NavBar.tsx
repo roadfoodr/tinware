@@ -1,4 +1,4 @@
-// Generated on 2024-07-12 at 13:30 PM EDT
+// Generated on 2024-07-12 at 16:15 PM EDT
 
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -13,8 +13,14 @@ interface NavBarProps {
 
 const NavBar: React.FC<NavBarProps> = ({ onRestart, onClearCache }) => {
   return (
-    <nav className="pure-menu pure-menu-horizontal pure-menu-fixed" style={{ height: '70px', padding: '10px 0' }}>
-      <div style={{ display: 'flex', alignItems: 'center', paddingLeft: '20px' }}>
+    <nav className="pure-menu pure-menu-horizontal pure-menu-fixed" style={{
+      height: '70px',
+      padding: '10px 20px',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
         <a href="#" onClick={onRestart} style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
           <img 
             src={TinwareLogo} 
@@ -34,7 +40,7 @@ const NavBar: React.FC<NavBarProps> = ({ onRestart, onClearCache }) => {
           </span>
         </a>
       </div>
-      <ul className="pure-menu-list" style={{ float: 'right' }}>
+      <ul className="pure-menu-list" style={{ margin: 0, padding: 0 }}>
         <li className="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
           <a href="#" className="pure-menu-link">
             <FontAwesomeIcon icon={faCog} /> Settings

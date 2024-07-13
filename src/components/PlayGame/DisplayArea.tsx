@@ -1,7 +1,8 @@
-// Generated on 2024-07-11 at 21:00 PM EDT
+// Generated on 2024-07-13 at 15:35 PM EDT
 
 import React from 'react';
 import { FormattedAnswer } from '../utils/answerProcessor';
+import { CONFIG } from '../../config/config';
 
 interface DisplayAreaProps {
   displayedAnswers: FormattedAnswer[];
@@ -17,18 +18,34 @@ const DisplayArea: React.FC<DisplayAreaProps> = ({ displayedAnswers, showAllAnsw
         <div className="hint-message">Hint: {hint}</div>
       )}
       {displayedAnswers.filter(item => item.formattedDefinition).map((item, index) => {
-        const rowClass = item.formattedDefinition === 'Not a valid word in this lexicon' ? 'invalid' :
+        const isInvalid = item.formattedDefinition.startsWith('Not a valid word in');
+        const rowClass = isInvalid ? 'invalid' :
                          item.isRootWithNoLetters ? 'valid' :
                          showAllAnswers && item.isRemaining ? 'missed' : 'valid';
         
         const canAddSClass = item.takesS.startsWith('can add S:') ? `can-add-s-${rowClass}` : 'can-add-s-default';
         
+        const isValidOrMissed = rowClass === 'valid' || rowClass === 'missed';
+        
         return (
           <div key={index} className={`answer-row ${rowClass}`}>
-            <span className="answer-word">{item.isRootWithNoLetters ? item.root.toUpperCase() : item.answerWord.toUpperCase()}</span>
+            <span className="answer-word root">
+              {isValidOrMissed ? (
+                <a 
+                  href={`${CONFIG.DICT_URL}/${item.answerWord}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="root-link"
+                >
+                  {item.answerWord.toUpperCase()}
+                </a>
+              ) : (
+                item.answerWord.toUpperCase()
+              )}
+            </span>
             <span className="definition">{item.formattedDefinition}</span>
             {item.takesS && (
-              <span className={`can-add-s root ${canAddSClass}`}>
+              <span className={`can-add-s ${canAddSClass} root`}>
                 {' '}{item.takesS}
               </span>
             )}

@@ -1,4 +1,4 @@
-// Generated on 2024-07-10 at 21:00 PM EDT
+// Generated on 2024-07-12 at 16:45 PM EDT
 
 import { WordItem } from '../db';
 import { getFromIndexedDB, clearCache } from '../services/DataInitializer';
@@ -24,6 +24,13 @@ export const selectTopic = async (topic: string): Promise<{
     filteredData = await db.wordList.where('topic').equals(topic).toArray();
   }
   
+  // Ensure all string comparisons are done safely
+  filteredData = filteredData.map(item => ({
+    ...item,
+    answerWord: String(item.answerWord),
+    definition: String(item.definition)
+  }));
+
   const selectedGameType = filteredData.length > 0 ? filteredData[0].gametype : null;
   
   return { filteredData, selectedGameType };

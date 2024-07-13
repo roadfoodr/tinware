@@ -77,6 +77,20 @@ button:focus-visible {
   text-transform: uppercase;
 }
 
+.root-link {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: inherit;
+  text-transform: inherit;
+  font-family: inherit;
+}
+
+.root-link:hover, .root-link:focus {
+  text-decoration: none;
+  outline: none;
+}
+
 .input-area {
   display: flex;
   align-items: center;

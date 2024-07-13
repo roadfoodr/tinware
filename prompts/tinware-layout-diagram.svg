@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <!-- App Container -->
+  <rect x="10" y="10" width="780" height="580" fill="#f0f0f0" stroke="#333" stroke-width="2"/>
+  <text x="20" y="30" font-family="Arial, sans-serif" font-size="16" fill="#333">App</text>
+  
+  <!-- NavBar -->
+  <rect x="20" y="40" width="760" height="40" fill="#d0d0d0" stroke="#333" stroke-width="2"/>
+  <text x="30" y="65" font-family="Arial, sans-serif" font-size="14" fill="#333">NavBar</text>
+  <text x="700" y="65" font-family="Arial, sans-serif" font-size="14" fill="#333">Settings</text>
+  
+  <!-- PlayGame Container -->
+  <rect x="20" y="90" width="760" height="490" fill="#e0e0e0" stroke="#333" stroke-width="2"/>
+  <text x="30" y="110" font-family="Arial, sans-serif" font-size="16" fill="#333">PlayGame</text>
+  
+  <!-- GamePrompt -->
+  <rect x="30" y="120" width="740" height="60" fill="#d0e0d0" stroke="#333" stroke-width="2"/>
+  <text x="40" y="145" font-family="Arial, sans-serif" font-size="14" fill="#333">GamePrompt</text>
+  <text x="40" y="165" font-family="Arial, sans-serif" font-size="12" fill="#333">Challenge: Selected Topic</text>
+  
+  <!-- InputArea -->
+  <rect x="30" y="190" width="740" height="60" fill="#d0d0e0" stroke="#333" stroke-width="2"/>
+  <text x="40" y="215" font-family="Arial, sans-serif" font-size="14" fill="#333">InputArea</text>
+  <rect x="350" y="205" width="30" height="30" fill="#fff" stroke="#333" stroke-width="2"/>
+  <text x="390" y="225" font-family="monospace" font-size="16" fill="#333" font-weight="bold">ROOT</text>
+  
+  <!-- ControlButtons -->
+  <rect x="30" y="260" width="740" height="40" fill="#e0d0d0" stroke="#333" stroke-width="2"/>
+  <text x="40" y="285" font-family="Arial, sans-serif" font-size="14" fill="#333">ControlButtons</text>
+  <rect x="200" y="265" width="100" height="30" fill="#fff" stroke="#333" stroke-width="1"/>
+  <text x="220" y="285" font-family="Arial, sans-serif" font-size="12" fill="#333">Skip Word</text>
+  <rect x="310" y="265" width="100" height="30" fill="#fff" stroke="#333" stroke-width="1"/>
+  <text x="325" y="285" font-family="Arial, sans-serif" font-size="12" fill="#333">Show Hint</text>
+  <rect x="420" y="265" width="120" height="30" fill="#fff" stroke="#333" stroke-width="1"/>
+  <text x="430" y="285" font-family="Arial, sans-serif" font-size="12" fill="#333">No More Words</text>
+  
+  <!-- MessageArea -->
+  <rect x="30" y="310" width="740" height="40" fill="#e0e0d0" stroke="#333" stroke-width="2"/>
+  <text x="40" y="335" font-family="Arial, sans-serif" font-size="14" fill="#333">MessageArea (Hint, Error, or Success messages)</text>
+  
+  <!-- DisplayArea -->
+  <rect x="30" y="360" width="740" height="210" fill="#d0e0e0" stroke="#333" stroke-width="2"/>
+  <text x="40" y="380" font-family="Arial, sans-serif" font-size="14" fill="#333">DisplayArea</text>
+  
+  <!-- Sample Answered Words -->
+  <rect x="40" y="390" width="720" height="30" fill="#c0ffc0" stroke="#333" stroke-width="1"/>
+  <text x="50" y="410" font-family="monospace" font-size="14" fill="#006600" font-weight="bold">SROOT</text>
+  <text x="120" y="410" font-family="Arial, sans-serif" font-size="12" fill="#333" font-style="italic">Definition for SROOT</text>
+  
+  <rect x="40" y="425" width="720" height="30" fill="#c0ffc0" stroke="#333" stroke-width="1"/>
+  <text x="50" y="445" font-family="monospace" font-size="14" fill="#006600" font-weight="bold">ROOTER</text>
+  <text x="120" y="445" font-family="Arial, sans-serif" font-size="12" fill="#333" font-style="italic">Definition for ROOTER</text>
+  
+  <rect x="40" y="460" width="720" height="30" fill="#ffc0c0" stroke="#333" stroke-width="1"/>
+  <text x="50" y="480" font-family="monospace" font-size="14" fill="#660000" font-weight="bold" text-decoration="line-through">TROOT</text>
+  <text x="120" y="480" font-family="Arial, sans-serif" font-size="12" fill="#333" font-style="italic">Not a valid word in this lexicon</text>
+</svg>

@@ -1,4 +1,4 @@
-// Generated on 2024-07-12 at 15:15 PM EDT
+// Generated on 2024-07-13 at 10:45 AM EDT
 
 import { useState, useEffect } from 'react';
 import { WordItem } from '../db';
@@ -62,10 +62,14 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
     }
 
     const longestHint = newAnswerSet.reduce((longest, current) => 
-        current.hint && current.hint.length > longest.length ? current.hint : longest
-      , '');
+      current.hint && current.hint.length > longest.length ? current.hint : longest
+    , '');
     
-    const validAnswersCount = newAnswerSet.filter(item => item.definition && item.definition !== 'Not a valid word in this lexicon').length;
+    const validAnswersCount = newAnswerSet.filter(item => 
+      item.definition && 
+      item.definition !== 'Not a valid word in this lexicon' &&
+      item.answer !== '-'
+    ).length;
     const defaultHint = `There are ${validAnswersCount} possibilities.`;
 
     setGameState({
@@ -94,13 +98,18 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
     }
 
     setGameState(prev => {
-      const { newAnswer, isValid } = processAnswer(input, prev.answerSet, prev.displayedAnswers);
+      const { newAnswer, isValid, isRepeated } = processAnswer(input, prev.answerSet, prev.displayedAnswers);
       
+      if (isRepeated) {
+        // Ignore repeated guesses
+        return prev;
+      }
+
       if (newAnswer) {
         return {
           ...prev,
           userInput: '',
-          displayedAnswers: [...prev.displayedAnswers, newAnswer],
+          displayedAnswers: [newAnswer, ...prev.displayedAnswers], // Add new answer to the beginning of the array
         };
       }
 
@@ -111,7 +120,7 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
   const handleNoMoreWords = () => {
     setGameState(prev => {
       const remainingAnswers = processRemainingAnswers(prev.answerSet, prev.displayedAnswers);
-      const newDisplayedAnswers = [...prev.displayedAnswers, ...remainingAnswers];
+      const newDisplayedAnswers = [...remainingAnswers, ...prev.displayedAnswers]; // Add remaining answers to the beginning
       const successMessage = calculateSuccessMessage(prev.answerSet, newDisplayedAnswers);
 
       return {

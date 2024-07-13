@@ -1,7 +1,8 @@
-// Generated on 2024-07-12 at 15:45 PM EDT
+// Generated on 2024-07-13 at 16:05 PM EDT
 
 import { WordItem } from '../db';
 import { SuccessMessage } from '../types/gameTypes';
+import { CONFIG } from '../config/config';
 
 export interface FormattedAnswer extends WordItem {
   formattedDefinition: string;
@@ -37,7 +38,7 @@ export const processAnswer = (
   input: string,
   answerSet: FormattedAnswer[],
   displayedAnswers: FormattedAnswer[]
-): { newAnswer: FormattedAnswer | null; isValid: boolean } => {
+): { newAnswer: FormattedAnswer | null; isValid: boolean; isRepeated: boolean } => {
   const uppercaseInput = input.toUpperCase();
 
   // Check if the input matches any answer in the answerSet
@@ -52,17 +53,25 @@ export const processAnswer = (
     if (!isAlreadyDisplayed) {
       return { 
         newAnswer: matchingAnswer,
-        isValid: true 
+        isValid: true,
+        isRepeated: false
+      };
+    } else {
+      return {
+        newAnswer: null,
+        isValid: true,
+        isRepeated: true
       };
     }
   }
 
-  // If no matching answer found or already displayed, create an invalid answer
+  // If no matching answer found, create an invalid answer
   if (answerSet.length > 0) {
+    const lexiconName = CONFIG.LEXICON_NAME || "this lexicon";
     const invalidAnswer: FormattedAnswer = {
       ...answerSet[0],
       answerWord: answerSet[0].subtopic === 'before' ? uppercaseInput + answerSet[0].root : answerSet[0].root + uppercaseInput,
-      formattedDefinition: 'Not a valid word in this lexicon',
+      formattedDefinition: `Not a valid word in ${lexiconName}`,
       answer: uppercaseInput,
       takesS: ''
     };
@@ -72,12 +81,14 @@ export const processAnswer = (
     );
 
     if (!isAlreadyDisplayed) {
-      return { newAnswer: invalidAnswer, isValid: false };
+      return { newAnswer: invalidAnswer, isValid: false, isRepeated: false };
+    } else {
+      return { newAnswer: null, isValid: false, isRepeated: true };
     }
   }
 
-  // If the answer is already displayed or there's no answerSet, return null
-  return { newAnswer: null, isValid: false };
+  // If there's no answerSet, return null
+  return { newAnswer: null, isValid: false, isRepeated: false };
 };
 
 export const processRemainingAnswers = (
@@ -109,7 +120,7 @@ export const processRemainingAnswers = (
   ).map(item => ({ 
     ...item,
     isRemaining: true
-  }));
+  })).reverse(); // Reverse the order of remaining answers
 };
 
 export const calculateSuccessMessage = (
