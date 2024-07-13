@@ -1,7 +1,7 @@
 // Generated on 2024-07-13 at 15:35 PM EDT
 
 import React from 'react';
-import { FormattedAnswer } from '../utils/answerProcessor';
+import { FormattedAnswer } from '../../utils/answerProcessor';
 import { CONFIG } from '../../config/config';
 
 interface DisplayAreaProps {

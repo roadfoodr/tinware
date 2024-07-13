@@ -1,7 +1,7 @@
 // Generated on 2024-07-11 at 21:40 PM EDT
 
 import React, { forwardRef } from 'react';
-import { FormattedAnswer } from '../utils/answerProcessor';
+import { FormattedAnswer } from '../../utils/answerProcessor';
 
 interface InputAreaProps {
   answerSet: FormattedAnswer[];

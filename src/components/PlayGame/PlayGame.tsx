@@ -1,4 +1,4 @@
-// Generated on 2024-07-13 at 17:00 PM EDT
+// Generated on 2024-07-13 at 23:00 PM EDT
 
 import React, { useEffect, useRef } from 'react';
 import { useGameLogic } from '../../hooks/useGameLogic';
@@ -83,7 +83,7 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
           isTransitioning={isTransitioning}
           showAllAnswers={showAllAnswers}
           showRetry={showRetry}
-          hint={hint}
+          hint={hint ? hint.text : ''}
           onSkip={handleNextWord}
           onRetry={handleRetry}
           onShowHint={handleShowHint}
@@ -92,7 +92,8 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
         <MessageArea
           errorMessage={errorMessage}
           successMessage={successMessage}
-          hint={showHint ? hint : null}
+          hint={hint}
+          showHint={showHint}
         />
         <DisplayArea
           displayedAnswers={displayedAnswers}

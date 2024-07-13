@@ -1,7 +1,7 @@
 // Generated on 2024-07-10 at 16:25 PM EDT
 
 import React from 'react';
-import { WordItem } from '../db';
+import { WordItem } from '../../db';
 
 interface GamePromptProps {
   selectedTopic: string;

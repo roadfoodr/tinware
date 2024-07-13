@@ -1,9 +1,17 @@
-// Generated on 2024-07-13 at 19:15 PM EDT
+// Generated on 2024-07-13 at 21:45 PM EDT
+/// <reference types="vite/client" />
 
 import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse';
 import CryptoJS from 'crypto-js';
-import { db } from '../db';
+import { db, WordItem } from '../db';
+
+declare global {
+  interface ImportMetaEnv {
+    VITE_REACT_APP_CSV_URL: string;
+    VITE_REACT_APP_ENCRYPTION_KEY: string;
+  }
+}
 
 const CSV_URL = import.meta.env.VITE_REACT_APP_CSV_URL;
 const ENCRYPTION_KEY = import.meta.env.VITE_REACT_APP_ENCRYPTION_KEY;
@@ -40,10 +48,10 @@ const DataInitializer: React.FC<DataInitializerProps> = ({ onDataLoaded }) => {
         }
         
         Papa.parse(csvText, {
-          complete: async (result) => {
+          complete: async (result: Papa.ParseResult<WordItem>) => {
             if (result.data && result.data.length > 0) {
               try {
-                await db.wordList.bulkAdd(result.data as any[]);
+                await db.wordList.bulkAdd(result.data);
                 console.log('Data stored in IndexedDB');
                 onDataLoaded();
               } catch (dbError) {
@@ -54,7 +62,7 @@ const DataInitializer: React.FC<DataInitializerProps> = ({ onDataLoaded }) => {
             }
             setIsLoading(false);
           },
-          error: (error) => {
+          error: (error: Error) => {
             console.error('Papa parse error:', error);
             setError(`Failed to parse CSV: ${error.message}`);
             setIsLoading(false);
@@ -62,9 +70,9 @@ const DataInitializer: React.FC<DataInitializerProps> = ({ onDataLoaded }) => {
           header: true,
           skipEmptyLines: true
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Fetch or process error:', err);
-        setError(`Failed to fetch or process the CSV file: ${err.message}`);
+        setError(`Failed to fetch or process the CSV file: ${err instanceof Error ? err.message : String(err)}`);
         setIsLoading(false);
       }
     };
@@ -83,7 +91,7 @@ const DataInitializer: React.FC<DataInitializerProps> = ({ onDataLoaded }) => {
 
       // Decrypt the data
       const decrypted = CryptoJS.AES.decrypt(
-        { ciphertext: ciphertext },
+        { ciphertext: ciphertext } as CryptoJS.lib.CipherParams,
         CryptoJS.enc.Base64.parse(ENCRYPTION_KEY),
         { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 }
       );

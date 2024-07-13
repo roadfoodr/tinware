@@ -1,6 +1,13 @@
-// Generated on 2024-07-13 at 17:15 PM EDT
+// Generated on 2024-07-13 at 22:30 PM EDT
 
 import { WordItem } from '../db';
+
+export interface FormattedAnswer extends WordItem {
+  formattedDefinition: string;
+  takesS: string;
+  isRemaining?: boolean;
+  isRootWithNoLetters?: boolean;
+}
 
 export interface PlayGameProps {
   data: WordItem[];
@@ -23,9 +30,9 @@ export interface HintMessage {
 }
 
 export interface GameState {
-  answerSet: WordItem[];
+  answerSet: FormattedAnswer[];
   userInput: string;
-  displayedAnswers: WordItem[];
+  displayedAnswers: FormattedAnswer[];
   showAllAnswers: boolean;
   skipButtonLabel: string;
   errorMessage: ErrorMessage | null;
