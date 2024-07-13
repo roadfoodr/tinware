@@ -1,10 +1,12 @@
-// Generated on 2024-07-08 at 14:15 PM EDT
+// Generated on 2024-07-13 at 19:15 PM EDT
 
 import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse';
+import CryptoJS from 'crypto-js';
 import { db } from '../db';
 
 const CSV_URL = import.meta.env.VITE_REACT_APP_CSV_URL;
+const ENCRYPTION_KEY = import.meta.env.VITE_REACT_APP_ENCRYPTION_KEY;
 
 interface DataInitializerProps {
   onDataLoaded: () => void;
@@ -28,7 +30,14 @@ const DataInitializer: React.FC<DataInitializerProps> = ({ onDataLoaded }) => {
 
         console.log('Fetching from S3');
         const response = await fetch(CSV_URL);
-        const csvText = await response.text();
+        let csvText: string;
+
+        if (CSV_URL.endsWith('.enc')) {
+          const encryptedData = await response.arrayBuffer();
+          csvText = await decryptData(encryptedData);
+        } else {
+          csvText = await response.text();
+        }
         
         Papa.parse(csvText, {
           complete: async (result) => {
@@ -62,6 +71,30 @@ const DataInitializer: React.FC<DataInitializerProps> = ({ onDataLoaded }) => {
 
     fetchCSV();
   }, [onDataLoaded]);
+
+  const decryptData = async (encryptedData: ArrayBuffer): Promise<string> => {
+    try {
+      // Convert ArrayBuffer to WordArray
+      const encryptedWords = CryptoJS.lib.WordArray.create(encryptedData);
+
+      // Extract IV (first 16 bytes) and ciphertext
+      const iv = CryptoJS.lib.WordArray.create(encryptedWords.words.slice(0, 4));
+      const ciphertext = CryptoJS.lib.WordArray.create(encryptedWords.words.slice(4));
+
+      // Decrypt the data
+      const decrypted = CryptoJS.AES.decrypt(
+        { ciphertext: ciphertext },
+        CryptoJS.enc.Base64.parse(ENCRYPTION_KEY),
+        { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 }
+      );
+
+      // Convert to string
+      return decrypted.toString(CryptoJS.enc.Utf8);
+    } catch (error) {
+      console.error('Decryption failed:', error);
+      throw error;
+    }
+  };
 
   if (isLoading) return <div className="pure-u-1 pure-u-md-1-3">Loading data...</div>;
   if (error) return <div className="pure-u-1 pure-u-md-1-3">Error: {error}</div>;
