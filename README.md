@@ -11,6 +11,12 @@ TINWARE is a React-based web application designed to help users practice and imp
 5. Click "No More Words" when you can't think of any more valid words or your entry is complete.
 6. Click "Next Word" or press the spacebar to move to the next challenge.
 
+## Live Demo
+
+https://tinware.netlify.app/
+
+[![Netlify Status](https://api.netlify.com/api/v1/badges/45b4f791-9b68-4e61-bc91-17e4339d8fe9/deploy-status)](https://app.netlify.com/sites/tinware/deploys)
+
 ## Technologies Used
 
 - React
