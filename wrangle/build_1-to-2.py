@@ -2,6 +2,15 @@ import pandas as pd
 import string
 import os
 
+WORDLIST_PREFIX = '2LW_'
+SCENARIO_PREFIX = 'S_' + WORDLIST_PREFIX
+TASK_PREFIX = 'T_' + WORDLIST_PREFIX
+
+BASE_WORDS_FILE = 'NWL23.txt'
+DEFINITIONS_FILE = 'scrabble_cheatsheet-definitions-full.csv'
+OUTPUT_FILE = WORDLIST_PREFIX + 'formatted_list.csv'
+
+
 def read_word_list(file_name):
     with open(file_name, 'r') as file:
         return set(word.strip().lower() for word in file)
@@ -42,7 +51,7 @@ def main():
     print(f"Current working directory: {os.getcwd()}")
 
     # Read the word list
-    valid_words = read_word_list('NWL23.txt')
+    valid_words = read_word_list(BASE_WORDS_FILE)
 
     # Generate and filter 2-letter words
     two_letter_words = generate_two_letter_words()
@@ -60,7 +69,7 @@ def main():
     df['hint'] = ''
 
     # Load definitions
-    definitions = load_definitions('scrabble_cheatsheet-definitions-full.csv')
+    definitions = load_definitions(DEFINITIONS_FILE)
 
     # Fill in definitions
     df['definition'] = df.apply(lambda row: 
@@ -75,16 +84,22 @@ def main():
     # Add special cases for 'c' and 'v'
     df = add_special_cases(df)
 
-    # Add taskID after adding special cases to ensure continuous numbering, using "2LW" prefix
-    df['taskID'] = '2LW_' + df.index.astype(str)
+    # Create scenarioID
+    df['scenarioID'] = df.groupby(['topic', 'gametype', 'subtopic', 'root']).ngroup()
+    df['scenarioID'] = SCENARIO_PREFIX + df['scenarioID'].astype(str)
+
+    # Add taskID after adding special cases to ensure continuous numbering
+    df['taskID'] = TASK_PREFIX + df.index.astype(str)
 
     # Reorder columns
-    df = df[['taskID', 'topic', 'gametype', 'subtopic', 'root', 'answer', 'answerWord', 'hint', 'definition', 'canAddS']]
+    df = df[['taskID', 'scenarioID', 'topic', 'gametype', 'subtopic', 'root', 'answer', 'answerWord', 'hint', 'definition', 'canAddS']]
+
+    # Sort the DataFrame
+    df = df.sort_values(['scenarioID', 'answerWord', 'taskID'])
 
     # Save to CSV
-    output_file = 'valid_two_letter_words_formatted.csv'
-    df.to_csv(output_file, index=False)
-    print(f"Output saved to: {os.path.join(os.getcwd(), output_file)}")
+    df.to_csv(OUTPUT_FILE, index=False)
+    print(f"Output saved to: {os.path.join(os.getcwd(), OUTPUT_FILE)}")
 
     # Print statistics
     total_words = len(df)
@@ -94,6 +109,7 @@ def main():
     placeholder_words = df[df['answerWord'] == '-'].shape[0]
     words_with_definitions = df[(df['definition'] != '(definition not found)') & (df['answerWord'] != '-')].shape[0]
     words_without_definitions = df[df['definition'] == '(definition not found)'].shape[0]
+    unique_scenarios = df['scenarioID'].nunique()
 
     print(f"\nTotal number of entries: {total_words}")
     print(f"Total number of valid 3-letter words that can be formed by adding 's': {words_with_s}")
@@ -102,6 +118,7 @@ def main():
     print(f"Number of placeholder entries: {placeholder_words}")
     print(f"Number of words with definitions: {words_with_definitions}")
     print(f"Number of words without definitions: {words_without_definitions}")
+    print(f"Number of unique scenarios: {unique_scenarios}")
 
     # Display example for root letter 'a'
     print("\nExample rows for root letter 'a':")
