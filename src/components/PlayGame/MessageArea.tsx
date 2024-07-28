@@ -1,4 +1,4 @@
-// Generated on 2024-07-14 at 11:30 AM EDT
+// Generated on 2024-07-28 at 23:00 PM EDT
 
 import React from 'react';
 import { SuccessMessage, ErrorMessage, HintMessage } from '../../types/gameTypes';
@@ -10,7 +10,12 @@ interface MessageAreaProps {
   showHint: boolean;
 }
 
-const MessageArea: React.FC<MessageAreaProps> = ({ errorMessage, successMessage, hint, showHint }) => {
+const MessageArea: React.FC<MessageAreaProps> = ({ 
+  errorMessage, 
+  successMessage, 
+  hint, 
+  showHint
+}) => {
   return (
     <div className="message-area">
       {showHint && hint && (

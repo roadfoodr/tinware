@@ -1,7 +1,7 @@
-// Generated on 2024-07-14 at 20:00 PM EDT
+// Generated on 2024-07-28 at 23:15 PM EDT
 
 import React from 'react';
-import { FormattedAnswer } from '../../utils/answerProcessor';
+import { FormattedAnswer } from '../../types/gameTypes';
 import { CONFIG } from '../../config/config';
 
 interface DisplayAreaProps {

@@ -1,4 +1,4 @@
-// Generated on 2024-07-13 at 16:05 PM EDT
+// Generated on 2024-07-29 at 13:00 PM EDT
 
 import { WordItem } from '../db';
 import { SuccessMessage } from '../types/gameTypes';
@@ -15,10 +15,13 @@ export const formatAnswer = (item: WordItem): FormattedAnswer => {
   let takesS = '';
 
   if (item.definition && item.definition !== 'Not a valid word in this lexicon' && item.canAddS !== undefined) {
-    const canAddS = item.canAddS.toUpperCase();
-    if (canAddS === 'TRUE') {
+    const canAddS = typeof item.canAddS === 'string' 
+      ? item.canAddS.toUpperCase() === 'TRUE'
+      : Boolean(item.canAddS);
+
+    if (canAddS) {
       takesS = `can add S: ${item.answerWord.toUpperCase()}S`;
-    } else if (canAddS === 'FALSE') {
+    } else {
       if (item.answerWord.toUpperCase().endsWith('S')) {
         takesS = `already ends in S`;
       } else {
@@ -148,7 +151,7 @@ export const calculateSuccessMessage = (
     };
   } else if (correctAnswers.length === 0) {
     return {
-      text: `There are no valid words for this root.`,
+      text: `There are no valid words for this scenario.`,
       class: 'all-words'
     };
   } else if (identifiedCorrectAnswers.length === correctAnswers.length) {

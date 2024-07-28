@@ -1,4 +1,4 @@
-// Generated on 2024-07-12 at 16:45 PM EDT
+// Generated on 2024-07-28 at 18:00 PM EDT
 
 import { WordItem } from '../db';
 import { getFromIndexedDB, clearCache } from '../services/DataInitializer';
@@ -16,6 +16,7 @@ export const fetchTopics = async (): Promise<string[]> => {
 export const selectTopic = async (topic: string): Promise<{
   filteredData: WordItem[];
   selectedGameType: string | null;
+  scenarios: string[];
 }> => {
   let filteredData: WordItem[];
   if (topic === 'All Words') {
@@ -28,18 +29,23 @@ export const selectTopic = async (topic: string): Promise<{
   filteredData = filteredData.map(item => ({
     ...item,
     answerWord: String(item.answerWord),
-    definition: String(item.definition)
+    definition: String(item.definition),
+    scenarioID: String(item.scenarioID)
   }));
 
   const selectedGameType = filteredData.length > 0 ? filteredData[0].gametype : null;
   
-  return { filteredData, selectedGameType };
+  // Get unique scenario IDs
+  const scenarios = Array.from(new Set(filteredData.map(item => item.scenarioID)));
+
+  return { filteredData, selectedGameType, scenarios };
 };
 
 export const restartGame = () => ({
   selectedTopic: null,
   selectedGameType: null,
   gameData: [],
+  currentScenarioID: null,
 });
 
 export const clearAppCache = async () => {
@@ -50,5 +56,16 @@ export const clearAppCache = async () => {
     selectedTopic: null,
     selectedGameType: null,
     gameData: [],
+    currentScenarioID: null,
   };
+};
+
+export const getScenarioData = (data: WordItem[], scenarioID: string): WordItem[] => {
+  return data.filter(item => item.scenarioID === scenarioID);
+};
+
+export const getRandomScenario = (scenarios: string[]): string | null => {
+  if (scenarios.length === 0) return null;
+  const randomIndex = Math.floor(Math.random() * scenarios.length);
+  return scenarios[randomIndex];
 };

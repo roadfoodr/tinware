@@ -1,4 +1,4 @@
-// Generated on 2024-07-14 at 20:15 PM EDT
+// Generated on 2024-07-29 at 12:15 PM EDT
 
 import React, { useEffect, useRef } from 'react';
 import { useGameLogic } from '../../hooks/useGameLogic';
@@ -63,13 +63,15 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
     return <div>Loading...</div>;
   }
 
+  const subtopic = answerSet[0].subtopic;
+
   return (
     <div className="pure-g">
       <div className="pure-u-1">
         <GamePrompt
           selectedTopic={selectedTopic}
           gametype={gametype}
-          answerSet={answerSet}
+          subtopic={subtopic}
         />
         <InputArea
           ref={inputRef}

@@ -1,4 +1,4 @@
-// Generated on 2024-07-08 at 13:25 PM EDT
+// Generated on 2024-07-29 at 10:00 AM EDT
 
 import React from 'react';
 
@@ -8,12 +8,19 @@ interface SelectGameProps {
 }
 
 const SelectGame: React.FC<SelectGameProps> = ({ topics, onSelectTopic }) => {
+  const handleTopicChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedTopic = e.target.value;
+    if (selectedTopic) {
+      onSelectTopic(selectedTopic);
+    }
+  };
+
   return (
     <div className="pure-g">
       <div className="pure-u-1 pure-u-md-1-3">
         <select 
           className="pure-input-1" 
-          onChange={(e) => onSelectTopic(e.target.value)}
+          onChange={handleTopicChange}
           defaultValue=""
         >
           <option value="" disabled>Select a challenge</option>

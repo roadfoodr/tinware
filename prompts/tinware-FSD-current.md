@@ -2,7 +2,7 @@
 
 ## 1. Introduction
 
-This Functional Specification Document (FSD) outlines the detailed functionality of the Tinware application, with a particular focus on the messaging system and user interactions in various scenarios.
+This Functional Specification Document (FSD) outlines the detailed functionality of the Tinware application, with a focus on the scenario-based gameplay and user interactions in various game states.
 
 ## 2. System Overview
 
@@ -23,7 +23,8 @@ interface WordItem {
   answerWord: string;
   hint: string;
   definition: string;
-  canAddS: number;
+  canAddS: string;
+  scenarioID: string;
 }
 ```
 
@@ -46,6 +47,7 @@ interface FormattedAnswer extends WordItem {
 ### 4.2 SelectGame
 - Dropdown menu for topic selection
 - Includes "All Words" option and all available topics
+- Initiates game start upon topic selection
 
 ### 4.3 PlayGame
 - Main game interface composed of:
@@ -62,27 +64,28 @@ interface FormattedAnswer extends WordItem {
 #### 5.1.1 Topic Selection
 - User selects a topic from the dropdown menu
 - System filters word data based on the selected topic
+- A random scenario is selected from the filtered data
 - If no data is available for the selected topic:
   ```
   Message: "No data available for the selected topic."
   ```
 
-#### 5.1.2 Word Selection
-- System randomly selects a word stem from the filtered data
-- If no valid combinations are found:
+#### 5.1.2 Scenario Selection
+- System randomly selects a scenario from the filtered data
+- If no valid scenarios are found:
   ```
-  Message: "No valid combinations found for the selected topic and gametype."
+  Message: "No valid scenarios found for the selected topic and gametype."
   ```
 
 ### 5.2 Gameplay
 
 #### 5.2.1 Game Prompt
-- Display the selected topic and game type
+- Display the selected topic
 - For "AddOne" game type:
   ```
-  Prompt: "Which letters go [before|after] the following word stem?"
+  Prompt: "Which letters go [before|after] the word stem?"
   ```
-  Where [before|after] is determined by the `subtopic` field of the current word set.
+  Where [before|after] is determined by the `subtopic` field of the current scenario.
 
 #### 5.2.2 User Input Processing
 - Valid input: Single alphabetic character (case-insensitive)
@@ -110,7 +113,6 @@ interface FormattedAnswer extends WordItem {
   - Display the word in the DisplayArea
   - Format: `[WORD]: Not a valid word in [LEXICON_NAME]`
   - Where [LEXICON_NAME] is specified in the config (default: "NWL23")
-  - If [LEXICON_NAME] is not available, use "this lexicon"
 - New answers (valid or invalid) are added to the beginning of the display list
 - No explicit "Valid word" message is displayed for correct guesses
 
@@ -123,7 +125,7 @@ interface FormattedAnswer extends WordItem {
   ```
   Message: "Hint: There are [X] possibilities."
   ```
-  Where [X] is the count of valid answers for the current word stem.
+  Where [X] is the count of valid answers for the current scenario.
 - The "Show Hint" button is disabled when a hint is already being displayed
 
 ### 5.3 End of Round
@@ -156,15 +158,15 @@ When user indicates no more words or all valid words have been found:
 
 #### 5.3.3 Retry Option
 - After "No More Words" is selected, a "Retry" button becomes visible
-- When clicked, it resets the game state using the current answer set, allowing the user to try again with the same word
+- When clicked, it resets the game state using the current scenario, allowing the user to try again with the same word set
 
 ### 5.4 Transition to Next Word
-- Brief transition period (300ms) where input is disabled
-- New word stem is selected and displayed
+- Brief transition period (defined in CONFIG.GAME.TRANSITION_DELAY_MS) where input is disabled
+- New scenario is selected and displayed
 
 ### 5.5 Retry Transition
-- Brief transition period (300ms) where input is disabled
-- Same word stem is reset and displayed
+- Brief transition period (defined in CONFIG.GAME.TRANSITION_DELAY_MS) where input is disabled
+- Same scenario is reset and displayed
 
 ### 5.6 Message Display Hierarchy
 - Messages are displayed in the following order of priority:
@@ -177,12 +179,11 @@ When user indicates no more words or all valid words have been found:
 
 ### 6.1 DisplayArea
 - Shows the list of answered and remaining words
-- Does not handle or display any hint-related information
-- Displays words as hyperlinks to the Merriam-Webster Scrabble dictionary for valid and missed answers
 - Uses color-coding for answers: 
   - Green for valid
   - Dark gray with strikethrough for invalid
   - Red for missed valid answers
+- Displays words as hyperlinks to the Merriam-Webster Scrabble dictionary for valid and missed answers
 
 ### 6.2 MessageArea
 - Handles the display of hints, error messages, and success messages
@@ -192,23 +193,22 @@ When user indicates no more words or all valid words have been found:
 - Includes "Skip Word"/"Next Word", "Show Hint", "No More Words", and "Retry" buttons
 - The "Show Hint" button is disabled when:
   - A hint is already being displayed
-  - No hint is available for the current word
+  - No hint is available for the current scenario
 - The "Skip Word" button changes to "Next Word" after the end of a round
 - The "Retry" button appears after the end of a round
 
 ### 6.4 InputArea
 - Displays a single-letter input field
-- Positions the input field before or after the root word based on the current subtopic
+- Positions the input field before or after the root word based on the current scenario's subtopic
 
 ## 7. Game State Management
 
 ### 7.1 useGameLogic Hook
 - Manages the overall game state
 - Handles user input processing
-- Does not generate success messages for valid word entries
 - Manages the display and hiding of hints
-- Handles the transition between words and rounds
-- Implements retry functionality for repeating a word set
+- Handles the transition between scenarios and rounds
+- Implements retry functionality for repeating a scenario
 
 ## 8. Data Management
 
@@ -242,7 +242,7 @@ Message: "Error storing data in IndexedDB: [error message]"
 - Subsequent app launches use cached data unless cleared
 
 ### 10.2 Transition Timing
-- 300ms transition period between words to prevent unintended actions
+- Transition period between scenarios is defined in CONFIG.GAME.TRANSITION_DELAY_MS
 
 ## 11. Accessibility
 
@@ -259,4 +259,12 @@ The UI should adapt to different screen sizes:
 - Tablet: Vertically stacked components with full width
 - Mobile: Simplified layout with scrollable sections
 
-This Functional Specification Document provides a comprehensive breakdown of Tinware's functionality, with a particular focus on the messaging system, user interactions, and component behaviors in various scenarios. It outlines the specific behaviors, error handling, and user interface elements that make up the Tinware experience, including the new retry functionality.
+## 13. Configuration
+
+### 13.1 Global Configuration
+- A centralized configuration file (config.ts) contains global settings:
+  - DICT_URL: URL for the Merriam-Webster Scrabble dictionary
+  - LEXICON_NAME: Name of the current lexicon (e.g., "NWL23")
+  - GAME.TRANSITION_DELAY_MS: Duration of transition delay between scenarios
+
+This Functional Specification Document provides a comprehensive breakdown of Tinware's functionality, with a particular focus on the scenario-based gameplay, user interactions, and component behaviors in various game states. It outlines the specific behaviors, error handling, and user interface elements that make up the Tinware experience, including the scenario selection, retry functionality, and centralized configuration for timing-related operations.

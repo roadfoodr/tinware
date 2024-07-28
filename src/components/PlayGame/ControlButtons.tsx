@@ -1,4 +1,4 @@
-// Generated on 2024-07-14 at 14:45 PM EDT
+// Generated on 2024-07-28 at 22:45 PM EDT
 
 import React from 'react';
 
@@ -26,7 +26,7 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
   onNoMoreWords
 }) => {
   return (
-    <div>
+    <div className="control-buttons">
       <button 
         className="pure-button" 
         onClick={onSkip}

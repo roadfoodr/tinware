@@ -1,24 +1,23 @@
-// Generated on 2024-07-10 at 16:25 PM EDT
+// Generated on 2024-07-29 at 11:00 AM EDT
 
 import React from 'react';
-import { WordItem } from '../../db';
 
 interface GamePromptProps {
   selectedTopic: string;
   gametype: string;
-  answerSet: WordItem[];
+  subtopic: string;
 }
 
-const GamePrompt: React.FC<GamePromptProps> = ({ selectedTopic, gametype, answerSet }) => {
-  if (answerSet.length === 0) return null;
-
+const GamePrompt: React.FC<GamePromptProps> = ({ selectedTopic, gametype, subtopic }) => {
   return (
-    <>
+    <div className="game-prompt">
       <h2>Challenge: {selectedTopic}</h2>
       {gametype === "AddOne" && (
-        <p>Which letters go <strong>{answerSet[0].subtopic}</strong> the following word stem?</p>
+        <p>
+          Which letters go <strong>{subtopic}</strong> the word stem?
+        </p>
       )}
-    </>
+    </div>
   );
 };
 

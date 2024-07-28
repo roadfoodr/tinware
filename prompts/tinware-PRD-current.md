@@ -2,14 +2,14 @@
 
 ## 1. Introduction
 
-Tinware is an educational word game application designed to help users improve their vocabulary and language skills. The game challenges players to identify valid words by adding letters before or after a given word stem.
+Tinware is an educational word game application designed to help users improve their vocabulary and language skills. The game challenges players to identify valid words by adding letters before or after a given word stem, using a scenario-based approach.
 
 ## 2. Purpose
 
 The primary purpose of Tinware is to:
 - Enhance users' vocabulary and word recognition skills
 - Provide an engaging and interactive learning experience
-- Offer a customizable learning journey through various topics and challenges
+- Offer a customizable learning journey through various topics and scenarios
 
 ## 3. Target Audience
 
@@ -23,9 +23,11 @@ The primary purpose of Tinware is to:
 ### 4.1 Topic Selection
 - Users can choose from a variety of topics or select "All Words" for a broader challenge
 - Topics are clearly displayed and easily selectable
+- Game starts immediately upon topic selection
 
-### 4.2 Gameplay
-- Players are presented with a word stem and must identify valid words by adding letters before or after the stem
+### 4.2 Scenario-based Gameplay
+- Players are presented with word scenarios based on the selected topic
+- Each scenario challenges players to identify valid words by adding letters before or after a given word stem
 - The game supports multiple game types, with the current implementation focusing on the "AddOne" game type
 
 ### 4.3 User Interface
@@ -41,6 +43,7 @@ The primary purpose of Tinware is to:
 ### 4.5 Hint System
 - Optional hints to assist players when stuck
 - "Show Hint" button is disabled when a hint is already displayed
+- Default hint shows the number of possible answers
 
 ### 4.6 Progress Tracking
 - Display of correct answers and remaining possibilities
@@ -52,10 +55,10 @@ The primary purpose of Tinware is to:
 
 ### 4.8 Settings and Customization
 - Option to clear cached data
-- Potential for future customization options
+- Centralized configuration for game settings (e.g., transition delays)
 
 ### 4.9 Retry Functionality
-- Option to retry the current word set after viewing all answers
+- Option to retry the current scenario after viewing all answers
 - Allows users to practice with challenging word sets
 
 ## 5. User Flow and Gameplay
@@ -64,10 +67,10 @@ The primary purpose of Tinware is to:
 1. User opens the Tinware app
 2. App loads, displaying the title and a topic selection menu
 3. User selects a topic or "All Words"
-4. Game initializes with the first word stem
+4. Game initializes with the first scenario
 
 ### 5.2 Main Gameplay Loop
-1. User is presented with a word stem and prompt (e.g., "Which letters go before/after the following word stem?")
+1. User is presented with a word stem and prompt (e.g., "Which letters go before/after the word stem?")
 2. User enters a letter in the input area
 3. System processes the input:
    - If valid: Displays the word with its definition at the top of the list
@@ -80,15 +83,15 @@ The primary purpose of Tinware is to:
 3. Display success message with performance summary
 4. "Next Word" and "Retry" buttons become available
 
-### 5.4 Transitioning to Next Word
+### 5.4 Transitioning to Next Scenario
 1. User clicks "Next Word" or presses the space bar
-2. Brief transition period
-3. New word stem is displayed, and the gameplay loop restarts
+2. Brief transition period (duration defined in configuration)
+3. New scenario is selected and displayed, and the gameplay loop restarts
 
-### 5.5 Retrying Current Word
+### 5.5 Retrying Current Scenario
 1. User clicks "Retry"
-2. Brief transition period
-3. Same word stem is reset and displayed, and the gameplay loop restarts with the current word set
+2. Brief transition period (duration defined in configuration)
+3. Same scenario is reset and displayed, and the gameplay loop restarts with the current word set
 
 ## 6. Feedback and Messaging
 
@@ -98,7 +101,7 @@ The primary purpose of Tinware is to:
 - Include the name of the current lexicon (e.g., "Not a valid word in NWL23")
 
 ### 6.2 Success Messages
-- Show after each valid word entry
+- Show after all words have been identified or when the round ends
 - Provide positive reinforcement and encourage continued play
 
 ### 6.3 End-of-Round Summary
@@ -111,6 +114,7 @@ The primary purpose of Tinware is to:
 - Available on user request
 - Provide subtle clues without giving away answers
 - "Show Hint" button is disabled when a hint is already displayed
+- Default hint shows the number of possible answers
 
 ## 7. Visual Design
 
@@ -137,9 +141,10 @@ The primary purpose of Tinware is to:
 ### 8.1 Data Management
 - Efficiently load and cache word data from CSV files
 - Use IndexedDB for local storage of word data
+- Implement scenario-based data structure for flexible gameplay
 
 ### 8.2 Performance
-- Ensure smooth transitions between words and rounds
+- Ensure smooth transitions between scenarios and rounds
 - Optimize for quick response times, even with large word datasets
 
 ### 8.3 Compatibility
@@ -149,6 +154,10 @@ The primary purpose of Tinware is to:
 ### 8.4 Dictionary Integration
 - Integrate with Merriam-Webster's Scrabble dictionary for word lookups
 - Open dictionary links in new browser tabs/windows
+
+### 8.5 Configuration
+- Implement a centralized configuration system for game settings
+- Allow easy modification of transition delays and other game parameters
 
 ## 9. Future Enhancements
 
@@ -168,4 +177,4 @@ The primary purpose of Tinware is to:
 - Frequency of dictionary lookups
 - Retry usage and its impact on user performance
 
-This PRD outlines the core features and user experience of Tinware, focusing on creating an engaging and educational word game. The document provides a clear vision for the product while allowing room for future enhancements and iterations based on user feedback and educational needs, including the new retry functionality.
+This PRD outlines the core features and user experience of Tinware, focusing on creating an engaging and educational word game using a scenario-based approach. The document provides a clear vision for the product while allowing room for future enhancements and iterations based on user feedback and educational needs, including the scenario-based gameplay and centralized configuration system.

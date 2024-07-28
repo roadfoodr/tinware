@@ -1,4 +1,4 @@
-// Generated on 2024-07-13 at 21:45 PM EDT
+// Generated on 2024-07-28 at 15:00 PM EDT
 /// <reference types="vite/client" />
 
 import React, { useState, useEffect } from 'react';
@@ -51,7 +51,12 @@ const DataInitializer: React.FC<DataInitializerProps> = ({ onDataLoaded }) => {
           complete: async (result: Papa.ParseResult<WordItem>) => {
             if (result.data && result.data.length > 0) {
               try {
-                await db.wordList.bulkAdd(result.data);
+                // Ensure scenarioID is present in each row
+                const processedData = result.data.map(item => ({
+                  ...item,
+                  scenarioID: item.scenarioID || `${item.subtopic}-${item.root}` // Fallback if scenarioID is missing
+                }));
+                await db.wordList.bulkAdd(processedData);
                 console.log('Data stored in IndexedDB');
                 onDataLoaded();
               } catch (dbError) {
@@ -68,7 +73,14 @@ const DataInitializer: React.FC<DataInitializerProps> = ({ onDataLoaded }) => {
             setIsLoading(false);
           },
           header: true,
-          skipEmptyLines: true
+          skipEmptyLines: true,
+          transform: (value, field) => {
+            // Convert 'TRUE' and 'FALSE' strings to boolean for canAddS field
+            if (field === 'canAddS') {
+              return value.toUpperCase() === 'TRUE';
+            }
+            return value;
+          }
         });
       } catch (err: unknown) {
         console.error('Fetch or process error:', err);
@@ -82,21 +94,16 @@ const DataInitializer: React.FC<DataInitializerProps> = ({ onDataLoaded }) => {
 
   const decryptData = async (encryptedData: ArrayBuffer): Promise<string> => {
     try {
-      // Convert ArrayBuffer to WordArray
       const encryptedWords = CryptoJS.lib.WordArray.create(encryptedData);
-
-      // Extract IV (first 16 bytes) and ciphertext
       const iv = CryptoJS.lib.WordArray.create(encryptedWords.words.slice(0, 4));
       const ciphertext = CryptoJS.lib.WordArray.create(encryptedWords.words.slice(4));
 
-      // Decrypt the data
       const decrypted = CryptoJS.AES.decrypt(
         { ciphertext: ciphertext } as CryptoJS.lib.CipherParams,
         CryptoJS.enc.Base64.parse(ENCRYPTION_KEY),
         { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 }
       );
 
-      // Convert to string
       return decrypted.toString(CryptoJS.enc.Utf8);
     } catch (error) {
       console.error('Decryption failed:', error);

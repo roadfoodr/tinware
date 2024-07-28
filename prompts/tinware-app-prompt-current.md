@@ -57,6 +57,7 @@ You are tasked with creating a React application called Tinware. The app reads a
        hint: string;
        definition: string;
        canAddS: number;
+       scenarioID: string;
      }
      ```
    - Export the database instance for use in other components.
@@ -66,7 +67,10 @@ You are tasked with creating a React application called Tinware. The app reads a
      ```typescript
      export const CONFIG = {
        DICT_URL: "https://scrabble.merriam.com/finder",
-       LEXICON_NAME: "NWL23"
+       LEXICON_NAME: "NWL23",
+       GAME: {
+         TRANSITION_DELAY_MS: 300
+       }
      };
      ```
 
@@ -84,15 +88,17 @@ You are tasked with creating a React application called Tinware. The app reads a
 
 7. appHelpers.ts:
    - Implement helper functions for App.tsx: fetchTopics, selectTopic, restartGame, and clearAppCache.
-   - These functions should handle topic fetching, topic selection, game restarting, and cache clearing operations.
+   - Update selectTopic to return scenarios along with filtered data and game type.
+   - Implement a getRandomScenario function to select a random scenario from an array of scenario IDs.
 
 8. useGameLogic.ts:
    - Implement a custom hook that encapsulates the game logic.
    - Use the utility functions from answerProcessor.ts.
-   - Include functions for selecting a new word, handling input changes, managing the game state, and processing the end of a round.
+   - Include functions for selecting a new scenario, handling input changes, managing the game state, and processing the end of a round.
    - Update the state management to use the new message types (ErrorMessage, SuccessMessage, HintMessage).
    - Ensure new answers are added to the beginning of the displayedAnswers array.
    - Remove success messages for valid words, only keeping error messages for invalid words.
+   - Use CONFIG.GAME.TRANSITION_DELAY_MS for all transition timings.
 
 9. DataInitializer.tsx:
    - Use Dexie for all database operations.
@@ -111,23 +117,26 @@ You are tasked with creating a React application called Tinware. The app reads a
 11. SelectGame.tsx:
     - Implement a dropdown menu to select topics, including an "All Words" option.
     - Use the topics provided via props.
+    - Start the game immediately upon topic selection.
+    - Use the getRandomScenario function to select an initial scenario.
 
 12. PlayGame.tsx:
     - Compose the main game interface using GamePrompt, InputArea, ControlButtons, MessageArea, and DisplayArea components.
     - Use the useGameLogic hook to manage game state and logic.
-    - Handle the space key press event for moving to the next word when appropriate.
+    - Handle the space key press event for moving to the next scenario when appropriate.
     - Pass only displayedAnswers and showAllAnswers props to the DisplayArea component.
 
 13. GamePrompt.tsx:
-    - Display the challenge instructions and word stem.
-    - Show the selected topic and game type.
+    - Display the challenge instructions and selected topic.
+    - Show the game type (e.g., "AddOne").
+    - Do not display the root word.
 
 14. InputArea.tsx:
-    - Implement an input area for a single letter, positioned before or after the root based on the current subtopic.
-    - Automatically focus the input field when a new word is selected.
+    - Implement an input area for a single letter, positioned before or after the root based on the current scenario's subtopic.
+    - Automatically focus the input field when a new scenario is selected.
 
 15. ControlButtons.tsx:
-    - Implement "Skip Word"/"Next Word", "Show Hint", and "No More Words" buttons.
+    - Implement "Skip Word"/"Next Word", "Show Hint", "No More Words", and "Retry" buttons.
     - Handle button states based on the current game state.
     - Disable the "Show Hint" button when a hint is already being displayed.
 
@@ -143,12 +152,12 @@ You are tasked with creating a React application called Tinware. The app reads a
     - Implement hyperlinks for valid and missed answer words, linking to the Merriam-Webster Scrabble dictionary.
     - Ensure hyperlinked text appears visually identical to non-linked text.
     - Display the "can add S" information using the same styling as the root class, but smaller.
-    - Remove hint-related props and logic from this component.
 
 18. App.tsx:
     - Compose the main application using NavBar, DataInitializer, SelectGame, and PlayGame components.
     - Use the helper functions from appHelpers.ts for topic fetching, selection, game restarting, and cache clearing.
     - Manage the overall application state and render the appropriate components based on the current state.
+    - Handle scenario selection and pass necessary data to child components.
 
 19. main.tsx:
     - Set up the React application entry point.
@@ -174,9 +183,9 @@ You are tasked with creating a React application called Tinware. The app reads a
 
 21. Game Logic Requirements:
     - Implement the gameplay logic for the "AddOne" game type:
-      - Display the prompt "Which letters go [before|after] the following word stem?" with [before|after] in bold.
+      - Display the prompt "Which letters go [before|after] the word stem?" with [before|after] in bold.
       - Show the root word in uppercase and fixed-width font.
-      - Validate user input against the set of unique values in the "answer" column of the current answerSet.
+      - Validate user input against the set of unique values in the "answer" column of the current scenario.
       - Ignore input that is not an alphabetic character (upper or lower case).
       - Treat space input as clicking "No More Words".
       - Display valid and invalid entries in the display area.
@@ -186,13 +195,13 @@ You are tasked with creating a React application called Tinware. The app reads a
     - Implement case-insensitive validation for user input.
     - Display all words (root and answerWords) in uppercase and fixed-width font.
     - Update success messages as specified in the answerProcessor.ts file.
-    - Implement a transition period when moving to the next word to prevent unintended actions.
+    - Implement a transition period when moving to the next scenario to prevent unintended actions.
     - Implement a "Show Hint" feature:
       - When clicked, display the hint in the MessageArea component.
-      - If there's no hint available, gray out the "Show Hint" button and disable it.
+      - If there's no hint available, show the number of possible answers.
       - Disable the "Show Hint" button when a hint is already being displayed.
     - Handle words without definitions:
-      - Include all roots in the answerSet, even if they don't have definitions.
+      - Include all roots in the scenario, even if they don't have definitions.
       - Only display and count words that have definitions when showing answers and calculating success.
     - Add new answers to the beginning of the displayedAnswers array.
     - Use the LEXICON_NAME from the config when displaying "Not a valid word" messages.
@@ -200,4 +209,4 @@ You are tasked with creating a React application called Tinware. The app reads a
     - Open dictionary links in a new browser window/tab without losing the game state.
     - Remove "Valid word: {word}" messages for correct guesses.
 
-Please generate the code for these files, ensuring that they work together to create a functional Tinware app. The app should load CSV data, store it in IndexedDB using Dexie, allow users to filter data by topic, implement the gameplay logic for the "AddOne" game type, and provide a way to clear the cached data.
+Please generate the code for these files, ensuring that they work together to create a functional Tinware app. The app should load CSV data, store it in IndexedDB using Dexie, allow users to filter data by topic, implement the gameplay logic for the "AddOne" game type using scenarios, and provide a way to clear the cached data.

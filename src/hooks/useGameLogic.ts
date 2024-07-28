@@ -1,9 +1,10 @@
-// Generated on 2024-07-14 at 19:00 PM EDT
+// Generated on 2024-07-29 at 01:30 AM EDT
 
 import { useState, useEffect } from 'react';
 import { WordItem } from '../db';
 import { GameState, ErrorMessage, SuccessMessage, HintMessage } from '../types/gameTypes';
 import { processAnswer, processRemainingAnswers, calculateSuccessMessage, formatAnswer, FormattedAnswer } from '../utils/answerProcessor';
+import { CONFIG } from '../config/config';
 
 export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
   const [gameState, setGameState] = useState<GameState>({
@@ -22,10 +23,10 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
   });
 
   useEffect(() => {
-    selectNewWord();
+    selectNewScenario();
   }, [data]);
 
-  const selectNewWord = () => {
+  const selectNewScenario = () => {
     if (data.length === 0) {
       setGameState(prev => ({
         ...prev,
@@ -35,24 +36,20 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
       return;
     }
 
-    const uniqueCombinations = Array.from(
-      new Set(data.map(item => `${item.subtopic}-${item.root}`))
-    );
+    const uniqueScenarios = Array.from(new Set(data.map(item => item.scenarioID)));
 
-    if (uniqueCombinations.length === 0) {
+    if (uniqueScenarios.length === 0) {
       setGameState(prev => ({
         ...prev,
-        errorMessage: { text: "No valid combinations found for the selected topic and gametype." },
+        errorMessage: { text: "No valid scenarios found for the selected topic and gametype." },
       }));
       return;
     }
 
-    const randomCombination = uniqueCombinations[Math.floor(Math.random() * uniqueCombinations.length)];
-    const [selectedSubtopic, selectedRoot] = randomCombination.split('-');
-
-    const newAnswerSet = data.filter(
-      item => item.subtopic === selectedSubtopic && item.root === selectedRoot
-    ).map(formatAnswer);
+    const randomScenarioID = uniqueScenarios[Math.floor(Math.random() * uniqueScenarios.length)];
+    const newAnswerSet = data
+      .filter(item => item.scenarioID === randomScenarioID)
+      .map(formatAnswer);
 
     setNewGameState(newAnswerSet);
   };
@@ -61,7 +58,7 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
     if (answerSet.length === 0) {
       setGameState(prev => ({
         ...prev,
-        errorMessage: { text: "No valid answers found for the selected combination." },
+        errorMessage: { text: "No valid answers found for the selected scenario." },
       }));
       return;
     }
@@ -117,8 +114,8 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
           userInput: '',
           displayedAnswers: [newAnswer, ...prev.displayedAnswers],
           errorMessage: null,
-          successMessage: null, // Remove the success message for valid words
-          showHint: false, // Hide hint when a new answer is processed
+          successMessage: null,
+          showHint: false,
         };
       }
 
@@ -126,7 +123,7 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
         ...prev,
         errorMessage: { text: `Not a valid word: ${input}${prev.answerSet[0].root}` },
         successMessage: null,
-        showHint: false, // Hide hint when an invalid answer is processed
+        showHint: false,
       };
     });
   };
@@ -144,16 +141,16 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
         successMessage,
         skipButtonLabel: 'Next Word',
         showRetry: true,
-        showHint: false, // Hide hint when showing all answers
+        showHint: false,
       };
     });
   };
 
   const handleNextWord = () => {
     setGameState(prev => ({ ...prev, isTransitioning: true, shouldFocusInput: true }));
-    selectNewWord();
+    selectNewScenario();
     onSkipWord();
-    setTimeout(() => setGameState(prev => ({ ...prev, isTransitioning: false })), 300);
+    setTimeout(() => setGameState(prev => ({ ...prev, isTransitioning: false })), CONFIG.GAME.TRANSITION_DELAY_MS);
   };
 
   const handleRetry = () => {
@@ -169,7 +166,7 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
     setTimeout(() => {
       setNewGameState(gameState.answerSet);
       setGameState(prev => ({ ...prev, isTransitioning: false }));
-    }, 300);
+    }, CONFIG.GAME.TRANSITION_DELAY_MS);
   };
 
   const handleShowHint = () => {

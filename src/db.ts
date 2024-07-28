@@ -1,10 +1,11 @@
-// Generated on 2024-07-08 at 13:45 PM EDT
+// Generated on 2024-07-28 at 14:30 PM EDT
 
 import Dexie, { Table } from 'dexie';
 
 export interface WordItem {
   id?: number;
   taskID: string;
+  scenarioID: string;
   topic: string;
   gametype: string;
   subtopic: string;
@@ -21,8 +22,8 @@ export class TinwareDatabase extends Dexie {
 
   constructor() {
     super('TinwareDB');
-    this.version(1).stores({
-      wordList: '++id, taskID, topic, gametype, subtopic, root, answer, answerWord, hint, definition, canAddS'
+    this.version(2).stores({
+      wordList: '++id, taskID, scenarioID, topic, gametype, subtopic, root, answer, answerWord, hint, definition, canAddS'
     });
   }
 }

@@ -1,4 +1,4 @@
-// Generated on 2024-07-13 at 22:30 PM EDT
+// Generated on 2024-07-28 at 16:30 PM EDT
 
 import { WordItem } from '../db';
 
@@ -42,4 +42,19 @@ export interface GameState {
   isTransitioning: boolean;
   shouldFocusInput: boolean;
   showRetry: boolean;
+  currentScenarioID?: string;
+}
+
+export interface Scenario {
+  id: string;
+  subtopic: string;
+  root: string;
+  answers: FormattedAnswer[];
+}
+
+export interface GameContext {
+  currentScenario: Scenario | null;
+  setCurrentScenario: (scenario: Scenario | null) => void;
+  gameState: GameState;
+  setGameState: (state: GameState) => void;
 }
