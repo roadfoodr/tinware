@@ -1,4 +1,4 @@
-// Generated on 2024-07-28 at 18:00 PM EDT
+// Generated on 2024-07-31 at 18:45 PM EDT
 
 import { WordItem } from '../db';
 import { getFromIndexedDB, clearCache } from '../services/DataInitializer';
@@ -15,7 +15,6 @@ export const fetchTopics = async (): Promise<string[]> => {
 
 export const selectTopic = async (topic: string): Promise<{
   filteredData: WordItem[];
-  selectedGameType: string | null;
   scenarios: string[];
 }> => {
   let filteredData: WordItem[];
@@ -33,19 +32,15 @@ export const selectTopic = async (topic: string): Promise<{
     scenarioID: String(item.scenarioID)
   }));
 
-  const selectedGameType = filteredData.length > 0 ? filteredData[0].gametype : null;
-  
   // Get unique scenario IDs
   const scenarios = Array.from(new Set(filteredData.map(item => item.scenarioID)));
 
-  return { filteredData, selectedGameType, scenarios };
+  return { filteredData, scenarios };
 };
 
 export const restartGame = () => ({
   selectedTopic: null,
-  selectedGameType: null,
   gameData: [],
-  currentScenarioID: null,
 });
 
 export const clearAppCache = async () => {
@@ -54,14 +49,8 @@ export const clearAppCache = async () => {
     dataLoaded: false,
     topics: [],
     selectedTopic: null,
-    selectedGameType: null,
     gameData: [],
-    currentScenarioID: null,
   };
-};
-
-export const getScenarioData = (data: WordItem[], scenarioID: string): WordItem[] => {
-  return data.filter(item => item.scenarioID === scenarioID);
 };
 
 export const getRandomScenario = (scenarios: string[]): string | null => {

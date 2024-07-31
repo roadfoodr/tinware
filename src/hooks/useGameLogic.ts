@@ -1,12 +1,13 @@
-// Generated on 2024-08-01 at 11:30 AM EDT
+// Generated on 2024-08-01 at 17:00 PM EDT
 
 import { useState, useEffect, useCallback } from 'react';
 import { WordItem } from '../db';
 import { GameState, ErrorMessage, SuccessMessage, HintMessage, GameType, FormattedAnswer } from '../types/gameTypes';
 import { processAnswer, processRemainingAnswers, calculateSuccessMessage, formatAnswer } from '../utils/answerProcessor';
 import { CONFIG } from '../config/config';
+import { getRandomScenario } from '../utils/appHelpers';
 
-export const useGameLogic = (data: WordItem[], onSkipWord: () => void, gameType: GameType) => {
+export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
   const [gameState, setGameState] = useState<GameState>({
     answerSet: [],
     userInput: '',
@@ -20,7 +21,7 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void, gameType:
     isTransitioning: false,
     shouldFocusInput: false,
     showRetry: false,
-    gameType: gameType,
+    gameType: 'AddOne', // Default game type, will be updated when scenario is selected
   });
 
   const selectNewScenario = useCallback(() => {
@@ -28,7 +29,7 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void, gameType:
       setGameState(prev => ({
         ...prev,
         answerSet: [],
-        errorMessage: { text: "No data available for the selected topic and gametype." },
+        errorMessage: { text: "No data available for the selected topic." },
       }));
       return;
     }
@@ -38,32 +39,42 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void, gameType:
     if (uniqueScenarios.length === 0) {
       setGameState(prev => ({
         ...prev,
-        errorMessage: { text: "No valid scenarios found for the selected topic and gametype." },
+        errorMessage: { text: "No valid scenarios found for the selected topic." },
       }));
       return;
     }
 
-    const randomScenarioID = uniqueScenarios[Math.floor(Math.random() * uniqueScenarios.length)];
+    const randomScenarioID = getRandomScenario(uniqueScenarios);
+    if (!randomScenarioID) {
+      setGameState(prev => ({
+        ...prev,
+        errorMessage: { text: "Failed to select a valid scenario." },
+      }));
+      return;
+    }
+
     const newAnswerSet = data
       .filter(item => item.scenarioID === randomScenarioID)
       .map(formatAnswer);
 
-    setNewGameState(newAnswerSet);
+    if (newAnswerSet.length === 0) {
+      setGameState(prev => ({
+        ...prev,
+        errorMessage: { text: "Selected scenario contains no valid answers." },
+      }));
+      return;
+    }
+
+    const newGameType = newAnswerSet[0].gametype as GameType;
+
+    setNewGameState(newAnswerSet, newGameType);
   }, [data]);
 
   useEffect(() => {
     selectNewScenario();
   }, [selectNewScenario]);
 
-  const setNewGameState = (answerSet: FormattedAnswer[]) => {
-    if (answerSet.length === 0) {
-      setGameState(prev => ({
-        ...prev,
-        errorMessage: { text: "No valid answers found for the selected scenario." },
-      }));
-      return;
-    }
-
+  const setNewGameState = (answerSet: FormattedAnswer[], gameType: GameType) => {
     const longestHint = answerSet.reduce((longest, current) => 
       current.hint && current.hint.length > longest.length ? current.hint : longest
     , '');
@@ -111,7 +122,6 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void, gameType:
   };
 
   const handleKeyPress = (key: string) => {
-    // We no longer handle the space bar here
     if (gameState.gameType === 'BingoStem' && key === 'Enter' && gameState.userInput.length === CONFIG.GAME.BINGO_STEM_INPUT_LENGTH) {
       handleSubmit();
     }
@@ -131,7 +141,7 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void, gameType:
       return prevState;
     }
 
-    const { newAnswer, isValid, isRepeated } = processAnswer(input, prevState.answerSet, prevState.displayedAnswers);
+    const { newAnswer, isValid, isRepeated, message } = processAnswer(input, prevState.answerSet, prevState.displayedAnswers);
     
     if (isRepeated) {
       return prevState;
@@ -151,7 +161,7 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void, gameType:
     return {
       ...prevState,
       userInput: '',
-      errorMessage: { text: `Not a valid word: ${input}${prevState.answerSet[0].root}` },
+      errorMessage: message as ErrorMessage,
       successMessage: null,
       showHint: false,
     };
@@ -195,7 +205,7 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void, gameType:
       }
       const remainingAnswers = processRemainingAnswers(prev.answerSet, prev.displayedAnswers);
       const newDisplayedAnswers = [...remainingAnswers, ...prev.displayedAnswers];
-      const successMessage = calculateSuccessMessage(prev.answerSet, newDisplayedAnswers, gameType);
+      const successMessage = calculateSuccessMessage(prev.answerSet, newDisplayedAnswers, prev.gameType);
 
       return {
         ...prev,
@@ -225,7 +235,7 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void, gameType:
     }));
     
     setTimeout(() => {
-      setNewGameState(gameState.answerSet);
+      setNewGameState(gameState.answerSet, gameState.gameType);
       setGameState(prev => ({ ...prev, isTransitioning: false }));
     }, CONFIG.GAME.TRANSITION_DELAY_MS);
   };

@@ -1,4 +1,4 @@
-// Generated on 2024-07-31 at 15:30 PM EDT
+// Generated on 2024-08-01 at 10:30 AM EDT
 
 import React, { useState, useEffect } from 'react';
 import NavBar from './components/NavBar';
@@ -13,8 +13,8 @@ const App: React.FC = () => {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [topics, setTopics] = useState<string[]>([]);
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
-  const [selectedGameType, setSelectedGameType] = useState<GameType | null>(null);
   const [gameData, setGameData] = useState<WordItem[]>([]);
+  const [currentGameType, setCurrentGameType] = useState<GameType>('AddOne');
 
   useEffect(() => {
     if (dataLoaded) {
@@ -24,25 +24,30 @@ const App: React.FC = () => {
 
   const handleSelectTopic = async (topic: string) => {
     setSelectedTopic(topic);
-    const { filteredData, selectedGameType } = await selectTopic(topic);
-    setSelectedGameType(selectedGameType as GameType);
+    const { filteredData } = await selectTopic(topic);
     setGameData(filteredData);
+    // Set an initial game type, this will be updated in PlayGame component
+    setCurrentGameType(filteredData[0]?.gametype as GameType || 'AddOne');
   };
 
   const handleRestart = () => {
-    const { selectedTopic, selectedGameType, gameData } = restartGame();
+    const { selectedTopic, gameData } = restartGame();
     setSelectedTopic(selectedTopic);
-    setSelectedGameType(selectedGameType as GameType | null);
     setGameData(gameData);
+    setCurrentGameType('AddOne');
   };
 
   const handleClearCache = async () => {
-    const { dataLoaded, topics, selectedTopic, selectedGameType, gameData } = await clearAppCache();
+    const { dataLoaded, topics, selectedTopic, gameData } = await clearAppCache();
     setDataLoaded(dataLoaded);
     setTopics(topics);
     setSelectedTopic(selectedTopic);
-    setSelectedGameType(selectedGameType as GameType | null);
     setGameData(gameData);
+    setCurrentGameType('AddOne');
+  };
+
+  const handleGameTypeChange = (newGameType: GameType) => {
+    setCurrentGameType(newGameType);
   };
 
   return (
@@ -55,12 +60,13 @@ const App: React.FC = () => {
         {dataLoaded && !selectedTopic && (
           <SelectGame topics={topics} onSelectTopic={handleSelectTopic} />
         )}
-        {dataLoaded && selectedTopic && selectedGameType && gameData.length > 0 && (
+        {dataLoaded && selectedTopic && gameData.length > 0 && (
           <PlayGame
             data={gameData}
-            gametype={selectedGameType}
+            gametype={currentGameType}
             onSkipWord={() => {}} // This is now handled internally by PlayGame
             selectedTopic={selectedTopic}
+            onGameTypeChange={handleGameTypeChange}
           />
         )}
         {dataLoaded && selectedTopic && gameData.length === 0 && (

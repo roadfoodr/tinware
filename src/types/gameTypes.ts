@@ -1,4 +1,4 @@
-// Generated on 2024-08-01 at 09:30 AM EDT
+// Generated on 2024-08-01 at 10:45 AM EDT
 
 import { WordItem } from '../db';
 
@@ -16,6 +16,7 @@ export interface PlayGameProps {
   gametype: GameType;
   onSkipWord: () => void;
   selectedTopic: string;
+  onGameTypeChange: (newGameType: GameType) => void;
 }
 
 export interface SuccessMessage {
@@ -44,7 +45,6 @@ export interface GameState {
   isTransitioning: boolean;
   shouldFocusInput: boolean;
   showRetry: boolean;
-  currentScenarioID?: string;
   gameType: GameType;
 }
 

@@ -1,4 +1,4 @@
-// Generated on 2024-07-31 at 20:00 PM EDT
+// Generated on 2024-08-01 at 16:15 PM EDT
 
 import React, { useEffect, useRef } from 'react';
 import { useGameLogic } from '../../hooks/useGameLogic';
@@ -9,7 +9,7 @@ import DisplayArea from './DisplayArea';
 import MessageArea from './MessageArea';
 import { PlayGameProps, GameType } from '../../types/gameTypes';
 
-const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selectedTopic }) => {
+const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selectedTopic, onGameTypeChange }) => {
   const {
     gameState,
     handleInputChange,
@@ -20,7 +20,7 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
     handleRetry,
     handleShowHint,
     resetShouldFocusInput,
-  } = useGameLogic(data, onSkipWord, gametype);
+  } = useGameLogic(data, onSkipWord);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -46,6 +46,12 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
       resetShouldFocusInput();
     }
   }, [shouldFocusInput, resetShouldFocusInput]);
+
+  useEffect(() => {
+    if (gameType !== gametype) {
+      onGameTypeChange(gameType);
+    }
+  }, [gameType, gametype, onGameTypeChange]);
 
   useEffect(() => {
     const handleGlobalKeyPress = (event: KeyboardEvent) => {
