@@ -1,4 +1,4 @@
-// Generated on 2024-07-29 at 13:15 PM EDT
+// Generated on 2024-07-31 at 15:30 PM EDT
 
 import React, { useState, useEffect } from 'react';
 import NavBar from './components/NavBar';
@@ -7,12 +7,13 @@ import SelectGame from './components/SelectGame';
 import PlayGame from './components/PlayGame/PlayGame';
 import { WordItem } from './db';
 import { fetchTopics, selectTopic, restartGame, clearAppCache } from './utils/appHelpers';
+import { GameType } from './types/gameTypes';
 
 const App: React.FC = () => {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [topics, setTopics] = useState<string[]>([]);
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
-  const [selectedGameType, setSelectedGameType] = useState<string | null>(null);
+  const [selectedGameType, setSelectedGameType] = useState<GameType | null>(null);
   const [gameData, setGameData] = useState<WordItem[]>([]);
 
   useEffect(() => {
@@ -24,14 +25,14 @@ const App: React.FC = () => {
   const handleSelectTopic = async (topic: string) => {
     setSelectedTopic(topic);
     const { filteredData, selectedGameType } = await selectTopic(topic);
-    setSelectedGameType(selectedGameType);
+    setSelectedGameType(selectedGameType as GameType);
     setGameData(filteredData);
   };
 
   const handleRestart = () => {
     const { selectedTopic, selectedGameType, gameData } = restartGame();
     setSelectedTopic(selectedTopic);
-    setSelectedGameType(selectedGameType);
+    setSelectedGameType(selectedGameType as GameType | null);
     setGameData(gameData);
   };
 
@@ -40,7 +41,7 @@ const App: React.FC = () => {
     setDataLoaded(dataLoaded);
     setTopics(topics);
     setSelectedTopic(selectedTopic);
-    setSelectedGameType(selectedGameType);
+    setSelectedGameType(selectedGameType as GameType | null);
     setGameData(gameData);
   };
 

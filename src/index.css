@@ -230,3 +230,34 @@ h2 {
   font-style: italic;
   color: #888;
 }
+
+/* New styles for BingoStem */
+.game-prompt {
+  text-align: center;
+}
+
+.bingo-stem-rack {
+  font-size: 1.2em;
+  margin-top: 0.5em;
+}
+
+.bingo-stem-input {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1em;
+}
+
+.bingo-stem-input .bingo-input {
+  width: calc(7ch + 1em); /* Adjust based on BINGO_STEM_INPUT_LENGTH */
+  padding: 0.5em;
+  font-size: 1.2em;
+  text-align: center;
+  margin-right: 1em;
+}
+
+.bingo-stem-input .pure-button {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}

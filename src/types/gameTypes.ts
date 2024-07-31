@@ -1,6 +1,8 @@
-// Generated on 2024-07-28 at 16:30 PM EDT
+// Generated on 2024-08-01 at 09:30 AM EDT
 
 import { WordItem } from '../db';
+
+export type GameType = 'AddOne' | 'BingoStem';
 
 export interface FormattedAnswer extends WordItem {
   formattedDefinition: string;
@@ -11,7 +13,7 @@ export interface FormattedAnswer extends WordItem {
 
 export interface PlayGameProps {
   data: WordItem[];
-  gametype: string;
+  gametype: GameType;
   onSkipWord: () => void;
   selectedTopic: string;
 }
@@ -43,6 +45,7 @@ export interface GameState {
   shouldFocusInput: boolean;
   showRetry: boolean;
   currentScenarioID?: string;
+  gameType: GameType;
 }
 
 export interface Scenario {

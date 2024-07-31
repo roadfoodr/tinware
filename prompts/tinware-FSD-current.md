@@ -2,11 +2,11 @@
 
 ## 1. Introduction
 
-This Functional Specification Document (FSD) outlines the detailed functionality of the Tinware application, with a focus on the scenario-based gameplay and user interactions in various game states.
+This Functional Specification Document (FSD) outlines the detailed functionality of the Tinware application, with a focus on the scenario-based gameplay and user interactions in various game states for both AddOne and BingoStem game types.
 
 ## 2. System Overview
 
-Tinware is a web-based educational word game that challenges users to identify valid words by adding letters before or after a given word stem. The application uses React for the frontend, with data stored in IndexedDB using Dexie.
+Tinware is a web-based educational word game that challenges users to identify valid words using different game modes. The application uses React for the frontend, with data stored in IndexedDB using Dexie.
 
 ## 3. Data Structure
 
@@ -86,33 +86,58 @@ interface FormattedAnswer extends WordItem {
   Prompt: "Which letters go [before|after] the word stem?"
   ```
   Where [before|after] is determined by the `subtopic` field of the current scenario.
+- For "BingoStem" game type:
+  ```
+  Prompt: "Enter seven letters to form bingos with the given rack:"
+  [ROOT] + [SUBTOPIC]
+  ```
+  Where [ROOT] is the root word and [SUBTOPIC] is the additional letter.
 
 #### 5.2.2 User Input Processing
+
+##### AddOne
 - Valid input: Single alphabetic character (case-insensitive)
 - Invalid input: Ignored silently (no error message)
 - Space key: Treated as "No More Words" action
 
+##### BingoStem
+- Valid input: Seven alphabetic characters (case-insensitive)
+- Invalid input: Non-alphabetic characters are ignored
+- Space key: Treated as "No More Words" action
+- Enter key: Submits the current input if 7 letters are entered
+
 #### 5.2.3 Answer Validation
+
+##### AddOne
 - If the input forms a valid word:
   - Display the word in the DisplayArea with its definition
   - Format: `[WORD]: [Definition]`
-  - If `canAddS` is true:
-    ```
-    Additional info: "can add S: [WORD]S"
-    ```
-  - If `canAddS` is false and word doesn't end in 'S':
-    ```
-    Additional info: "can not add S"
-    ```
-  - If `canAddS` is false and word ends in 'S':
-    ```
-    Additional info: "already ends in S"
-    ```
-  - The word is displayed as a hyperlink to the Merriam-Webster Scrabble dictionary
 - If the input forms an invalid word:
   - Display the word in the DisplayArea
   - Format: `[WORD]: Not a valid word in [LEXICON_NAME]`
-  - Where [LEXICON_NAME] is specified in the config (default: "NWL23")
+
+##### BingoStem
+- If the submitted word is valid:
+  - Display the word in the DisplayArea with its definition
+  - Format: `[WORD]: [Definition]`
+- If the submitted word is invalid:
+  - Display the word in the DisplayArea
+  - Format: `[WORD]: Not a valid word in [LEXICON_NAME]`
+
+For both game types:
+- If `canAddS` is true:
+  ```
+  Additional info: "can add S: [WORD]S"
+  ```
+- If `canAddS` is false and word doesn't end in 'S':
+  ```
+  Additional info: "can not add S"
+  ```
+- If `canAddS` is false and word ends in 'S':
+  ```
+  Additional info: "already ends in S"
+  ```
+- The word is displayed as a hyperlink to the Merriam-Webster Scrabble dictionary
 - New answers (valid or invalid) are added to the beginning of the display list
 - No explicit "Valid word" message is displayed for correct guesses
 
@@ -135,7 +160,8 @@ When user indicates no more words or all valid words have been found:
 
 - If there are no valid answers (root word only):
   ```
-  Message: "There are no letters that can go [before|after] [ROOT]."
+  Message: "There are no letters that can go [before|after] [ROOT]." (for AddOne)
+  Message: "There are no valid bingos for the rack [ROOT] + [SUBTOPIC]." (for BingoStem)
   ```
   Where [ROOT] is displayed in uppercase.
 
@@ -198,14 +224,19 @@ When user indicates no more words or all valid words have been found:
 - The "Retry" button appears after the end of a round
 
 ### 6.4 InputArea
-- Displays a single-letter input field
-- Positions the input field before or after the root word based on the current scenario's subtopic
+- For AddOne:
+  - Displays a single-letter input field
+  - Positions the input field before or after the root word based on the current scenario's subtopic
+- For BingoStem:
+  - Displays a seven-letter input field
+  - Shows the rack (ROOT + SUBTOPIC) above the input field
+- Submit button is present for BingoStem and is disabled until 7 letters are entered
 
 ## 7. Game State Management
 
 ### 7.1 useGameLogic Hook
 - Manages the overall game state
-- Handles user input processing
+- Handles user input processing for both AddOne and BingoStem
 - Manages the display and hiding of hints
 - Handles the transition between scenarios and rounds
 - Implements retry functionality for repeating a scenario
@@ -247,7 +278,8 @@ Message: "Error storing data in IndexedDB: [error message]"
 ## 11. Accessibility
 
 ### 11.1 Keyboard Navigation
-- Space key can be used to progress to the next word when appropriate
+- Space key can be used to trigger "No More Words" when appropriate
+- Enter key can be used to submit words in BingoStem mode
 
 ### 11.2 Color Coding
 - Use of color is supplemented with text or symbols to ensure accessibility for color-blind users
@@ -266,5 +298,6 @@ The UI should adapt to different screen sizes:
   - DICT_URL: URL for the Merriam-Webster Scrabble dictionary
   - LEXICON_NAME: Name of the current lexicon (e.g., "NWL23")
   - GAME.TRANSITION_DELAY_MS: Duration of transition delay between scenarios
+  - GAME.BINGO_STEM_INPUT_LENGTH: Number of letters required for BingoStem input (7)
 
-This Functional Specification Document provides a comprehensive breakdown of Tinware's functionality, with a particular focus on the scenario-based gameplay, user interactions, and component behaviors in various game states. It outlines the specific behaviors, error handling, and user interface elements that make up the Tinware experience, including the scenario selection, retry functionality, and centralized configuration for timing-related operations.
+This Functional Specification Document provides a comprehensive breakdown of Tinware's functionality, with a particular focus on the scenario-based gameplay, user interactions, and component behaviors in various game states for both AddOne and BingoStem game types. It outlines the specific behaviors, error handling, and user interface elements that make up the Tinware experience, including the scenario selection, retry functionality, and centralized configuration for timing-related operations.

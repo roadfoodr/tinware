@@ -1,4 +1,4 @@
-// Generated on 2024-07-29 at 12:15 PM EDT
+// Generated on 2024-07-31 at 20:00 PM EDT
 
 import React, { useEffect, useRef } from 'react';
 import { useGameLogic } from '../../hooks/useGameLogic';
@@ -7,18 +7,20 @@ import InputArea from './InputArea';
 import ControlButtons from './ControlButtons';
 import DisplayArea from './DisplayArea';
 import MessageArea from './MessageArea';
-import { PlayGameProps } from '../../types/gameTypes';
+import { PlayGameProps, GameType } from '../../types/gameTypes';
 
 const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selectedTopic }) => {
   const {
     gameState,
     handleInputChange,
+    handleKeyPress,
+    handleSubmit,
     handleNoMoreWords,
     handleNextWord,
     handleRetry,
     handleShowHint,
     resetShouldFocusInput,
-  } = useGameLogic(data, onSkipWord);
+  } = useGameLogic(data, onSkipWord, gametype);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -35,6 +37,7 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
     showHint,
     shouldFocusInput,
     showRetry,
+    gameType,
   } = gameState;
 
   useEffect(() => {
@@ -45,33 +48,39 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
   }, [shouldFocusInput, resetShouldFocusInput]);
 
   useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key === ' ' && skipButtonLabel === 'Next Word' && !isTransitioning) {
+    const handleGlobalKeyPress = (event: KeyboardEvent) => {
+      if (event.key === ' ' && !isTransitioning) {
         event.preventDefault();
-        handleNextWord();
+        if (showAllAnswers) {
+          handleNextWord();
+        } else {
+          handleNoMoreWords();
+        }
       }
     };
 
-    window.addEventListener('keydown', handleKeyPress);
+    window.addEventListener('keydown', handleGlobalKeyPress);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyPress);
+      window.removeEventListener('keydown', handleGlobalKeyPress);
     };
-  }, [skipButtonLabel, isTransitioning, handleNextWord]);
+  }, [showAllAnswers, isTransitioning, handleNextWord, handleNoMoreWords]);
 
   if (answerSet.length === 0) {
     return <div>Loading...</div>;
   }
 
-  const subtopic = answerSet[0].subtopic;
+  const currentScenario = answerSet[0];
+  const { subtopic, root } = currentScenario;
 
   return (
     <div className="pure-g">
       <div className="pure-u-1">
         <GamePrompt
           selectedTopic={selectedTopic}
-          gametype={gametype}
+          gametype={gameType}
           subtopic={subtopic}
+          root={root}
         />
         <InputArea
           ref={inputRef}
@@ -79,6 +88,9 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
           userInput={userInput}
           showAllAnswers={showAllAnswers}
           onInputChange={handleInputChange}
+          onKeyPress={handleKeyPress}
+          onSubmit={handleSubmit}
+          gameType={gameType}
         />
         <ControlButtons
           skipButtonLabel={skipButtonLabel}

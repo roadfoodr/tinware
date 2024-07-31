@@ -1,12 +1,12 @@
-// Generated on 2024-07-29 at 01:30 AM EDT
+// Generated on 2024-08-01 at 11:30 AM EDT
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { WordItem } from '../db';
-import { GameState, ErrorMessage, SuccessMessage, HintMessage } from '../types/gameTypes';
-import { processAnswer, processRemainingAnswers, calculateSuccessMessage, formatAnswer, FormattedAnswer } from '../utils/answerProcessor';
+import { GameState, ErrorMessage, SuccessMessage, HintMessage, GameType, FormattedAnswer } from '../types/gameTypes';
+import { processAnswer, processRemainingAnswers, calculateSuccessMessage, formatAnswer } from '../utils/answerProcessor';
 import { CONFIG } from '../config/config';
 
-export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
+export const useGameLogic = (data: WordItem[], onSkipWord: () => void, gameType: GameType) => {
   const [gameState, setGameState] = useState<GameState>({
     answerSet: [],
     userInput: '',
@@ -20,13 +20,10 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
     isTransitioning: false,
     shouldFocusInput: false,
     showRetry: false,
+    gameType: gameType,
   });
 
-  useEffect(() => {
-    selectNewScenario();
-  }, [data]);
-
-  const selectNewScenario = () => {
+  const selectNewScenario = useCallback(() => {
     if (data.length === 0) {
       setGameState(prev => ({
         ...prev,
@@ -52,7 +49,11 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
       .map(formatAnswer);
 
     setNewGameState(newAnswerSet);
-  };
+  }, [data]);
+
+  useEffect(() => {
+    selectNewScenario();
+  }, [selectNewScenario]);
 
   const setNewGameState = (answerSet: FormattedAnswer[]) => {
     if (answerSet.length === 0) {
@@ -87,52 +88,114 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
       showHint: false,
       shouldFocusInput: true,
       showRetry: false,
+      gameType: gameType,
     });
   };
 
   const handleInputChange = (input: string) => {
-    if (input === ' ') {
-      handleNoMoreWords();
-      return;
-    }
-
-    if (!/^[A-Z]$/.test(input)) {
-      return;
-    }
-
     setGameState(prev => {
-      const { newAnswer, isValid, isRepeated } = processAnswer(input, prev.answerSet, prev.displayedAnswers);
-      
-      if (isRepeated) {
-        // Ignore repeated guesses
-        return prev;
-      }
-
-      if (newAnswer) {
+      if (prev.gameType === 'AddOne') {
+        return processAddOneInput(prev, input);
+      } else {
+        // For BingoStem, only allow alphabetical characters
+        const filteredInput = input.replace(/[^A-Za-z]/g, '').toUpperCase();
         return {
           ...prev,
-          userInput: '',
-          displayedAnswers: [newAnswer, ...prev.displayedAnswers],
+          userInput: filteredInput,
           errorMessage: null,
           successMessage: null,
           showHint: false,
         };
       }
+    });
+  };
 
+  const handleKeyPress = (key: string) => {
+    // We no longer handle the space bar here
+    if (gameState.gameType === 'BingoStem' && key === 'Enter' && gameState.userInput.length === CONFIG.GAME.BINGO_STEM_INPUT_LENGTH) {
+      handleSubmit();
+    }
+  };
+
+  const handleSubmit = () => {
+    setGameState(prev => {
+      if (prev.gameType === 'BingoStem') {
+        return processBingoStemInput(prev);
+      }
+      return prev;
+    });
+  };
+
+  const processAddOneInput = (prevState: GameState, input: string): GameState => {
+    if (!/^[A-Z]$/.test(input)) {
+      return prevState;
+    }
+
+    const { newAnswer, isValid, isRepeated } = processAnswer(input, prevState.answerSet, prevState.displayedAnswers);
+    
+    if (isRepeated) {
+      return prevState;
+    }
+
+    if (newAnswer) {
       return {
-        ...prev,
-        errorMessage: { text: `Not a valid word: ${input}${prev.answerSet[0].root}` },
+        ...prevState,
+        userInput: '',
+        displayedAnswers: [newAnswer, ...prevState.displayedAnswers],
+        errorMessage: null,
         successMessage: null,
         showHint: false,
       };
-    });
+    }
+
+    return {
+      ...prevState,
+      userInput: '',
+      errorMessage: { text: `Not a valid word: ${input}${prevState.answerSet[0].root}` },
+      successMessage: null,
+      showHint: false,
+    };
+  };
+
+  const processBingoStemInput = (prevState: GameState): GameState => {
+    const { newAnswer, isValid, isRepeated, message } = processAnswer(prevState.userInput, prevState.answerSet, prevState.displayedAnswers, true);
+    
+    if (isRepeated) {
+      return {
+        ...prevState,
+        userInput: '',  // Clear input even if the word is repeated
+      };
+    }
+
+    if (newAnswer) {
+      return {
+        ...prevState,
+        userInput: '',
+        displayedAnswers: [newAnswer, ...prevState.displayedAnswers],
+        errorMessage: null,
+        successMessage: null,
+        showHint: false,
+      };
+    }
+
+    return {
+      ...prevState,
+      userInput: '',
+      errorMessage: message?.text.includes('Answer must include only the letters') ? null : message as ErrorMessage,
+      hint: message?.text.includes('Answer must include only the letters') ? message as HintMessage : null,
+      showHint: message?.text.includes('Answer must include only the letters'),
+      successMessage: null,
+    };
   };
 
   const handleNoMoreWords = () => {
     setGameState(prev => {
+      if (prev.showAllAnswers) {
+        return prev; // Do nothing if all answers are already shown
+      }
       const remainingAnswers = processRemainingAnswers(prev.answerSet, prev.displayedAnswers);
       const newDisplayedAnswers = [...remainingAnswers, ...prev.displayedAnswers];
-      const successMessage = calculateSuccessMessage(prev.answerSet, newDisplayedAnswers);
+      const successMessage = calculateSuccessMessage(prev.answerSet, newDisplayedAnswers, gameType);
 
       return {
         ...prev,
@@ -142,6 +205,7 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
         skipButtonLabel: 'Next Word',
         showRetry: true,
         showHint: false,
+        userInput: '',  // Clear input when showing all answers
       };
     });
   };
@@ -154,14 +218,11 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
   };
 
   const handleRetry = () => {
-    setGameState(prev => {
-      const retryAnswerSet = [...prev.answerSet];
-      return {
-        ...prev,
-        isTransitioning: true,
-        shouldFocusInput: true,
-      };
-    });
+    setGameState(prev => ({
+      ...prev,
+      isTransitioning: true,
+      shouldFocusInput: true,
+    }));
     
     setTimeout(() => {
       setNewGameState(gameState.answerSet);
@@ -186,6 +247,8 @@ export const useGameLogic = (data: WordItem[], onSkipWord: () => void) => {
   return {
     gameState,
     handleInputChange,
+    handleKeyPress,
+    handleSubmit,
     handleNoMoreWords,
     handleNextWord,
     handleRetry,

@@ -2,7 +2,7 @@
 
 ## 1. Introduction
 
-Tinware is an educational word game application designed to help users improve their vocabulary and language skills. The game challenges players to identify valid words by adding letters before or after a given word stem, using a scenario-based approach.
+Tinware is an educational word game application designed to help users improve their vocabulary and language skills. The game challenges players to identify valid words using different game modes, currently featuring AddOne and BingoStem, using a scenario-based approach.
 
 ## 2. Purpose
 
@@ -10,6 +10,7 @@ The primary purpose of Tinware is to:
 - Enhance users' vocabulary and word recognition skills
 - Provide an engaging and interactive learning experience
 - Offer a customizable learning journey through various topics and scenarios
+- Support multiple game modes to cater to different learning styles and preferences
 
 ## 3. Target Audience
 
@@ -27,37 +28,48 @@ The primary purpose of Tinware is to:
 
 ### 4.2 Scenario-based Gameplay
 - Players are presented with word scenarios based on the selected topic
-- Each scenario challenges players to identify valid words by adding letters before or after a given word stem
-- The game supports multiple game types, with the current implementation focusing on the "AddOne" game type
+- Each scenario challenges players to identify valid words based on the current game mode
+- The game supports multiple game types, currently including AddOne and BingoStem
 
-### 4.3 User Interface
+### 4.3 Game Modes
+
+#### 4.3.1 AddOne
+- Players add a single letter before or after a given word stem
+- Immediate feedback on each letter input
+
+#### 4.3.2 BingoStem
+- Players enter seven letters to form words (bingos) with a given rack
+- Rack consists of a root word plus one additional letter
+- Players submit their seven-letter word for validation
+
+### 4.4 User Interface
 - Clean, intuitive design with a responsive layout
-- Prominent display of the current challenge and word stem
-- Easy-to-use input area for entering letters
+- Prominent display of the current challenge and word stem or rack
+- Easy-to-use input area adapted for each game mode
 
-### 4.4 Feedback System
+### 4.5 Feedback System
 - Real-time feedback on user inputs
 - Comprehensive end-of-round summary
 - Invalid word messages include the name of the current lexicon
 
-### 4.5 Hint System
+### 4.6 Hint System
 - Optional hints to assist players when stuck
 - "Show Hint" button is disabled when a hint is already displayed
 - Default hint shows the number of possible answers
 
-### 4.6 Progress Tracking
+### 4.7 Progress Tracking
 - Display of correct answers and remaining possibilities
 - Color-coded answers for easy identification (green for valid, gray for invalid, red for missed)
 
-### 4.7 Dictionary Integration
+### 4.8 Dictionary Integration
 - Valid and missed answer words are hyperlinked to an online Scrabble dictionary
 - Dictionary links open in a new browser tab/window
 
-### 4.8 Settings and Customization
+### 4.9 Settings and Customization
 - Option to clear cached data
 - Centralized configuration for game settings (e.g., transition delays)
 
-### 4.9 Retry Functionality
+### 4.10 Retry Functionality
 - Option to retry the current scenario after viewing all answers
 - Allows users to practice with challenging word sets
 
@@ -67,9 +79,12 @@ The primary purpose of Tinware is to:
 1. User opens the Tinware app
 2. App loads, displaying the title and a topic selection menu
 3. User selects a topic or "All Words"
-4. Game initializes with the first scenario
+4. User is presented with the game mode (AddOne or BingoStem)
+5. Game initializes with the first scenario
 
 ### 5.2 Main Gameplay Loop
+
+#### 5.2.1 AddOne
 1. User is presented with a word stem and prompt (e.g., "Which letters go before/after the word stem?")
 2. User enters a letter in the input area
 3. System processes the input:
@@ -77,8 +92,17 @@ The primary purpose of Tinware is to:
    - If invalid: Shows an error message at the top of the list
 4. User continues entering letters or chooses to end the round
 
+#### 5.2.2 BingoStem
+1. User is presented with a rack (root word + one letter) and prompt to enter seven letters
+2. User enters seven letters in the input area
+3. User submits the word
+4. System processes the input:
+   - If valid: Displays the word with its definition at the top of the list
+   - If invalid: Shows an error message at the top of the list
+5. User continues entering words or chooses to end the round
+
 ### 5.3 Ending a Round
-1. User clicks "No More Words" or the system detects no more valid words
+1. User clicks "No More Words" or presses the space bar
 2. System reveals any remaining valid words at the top of the list
 3. Display success message with performance summary
 4. "Next Word" and "Retry" buttons become available
@@ -124,7 +148,7 @@ The primary purpose of Tinware is to:
 - Missed answers: Light red background, dark red text
 
 ### 7.2 Typography
-- Use bold, fixed-width, serif (typewriter-style) font for word stems and answers
+- Use bold, fixed-width, serif (typewriter-style) font for word stems, racks, and answers
 - Ensure readability across devices
 
 ### 7.3 Hyperlinks
@@ -161,7 +185,7 @@ The primary purpose of Tinware is to:
 
 ## 9. Future Enhancements
 
-- Multiple game types beyond "AddOne"
+- Additional game types beyond AddOne and BingoStem
 - User accounts and progress tracking
 - Leaderboards and social features
 - Customizable difficulty levels
@@ -177,4 +201,4 @@ The primary purpose of Tinware is to:
 - Frequency of dictionary lookups
 - Retry usage and its impact on user performance
 
-This PRD outlines the core features and user experience of Tinware, focusing on creating an engaging and educational word game using a scenario-based approach. The document provides a clear vision for the product while allowing room for future enhancements and iterations based on user feedback and educational needs, including the scenario-based gameplay and centralized configuration system.
+This PRD outlines the core features and user experience of Tinware, focusing on creating an engaging and educational word game using a scenario-based approach with multiple game modes. The document provides a clear vision for the product while allowing room for future enhancements and iterations based on user feedback and educational needs.

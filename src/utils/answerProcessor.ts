@@ -1,7 +1,7 @@
-// Generated on 2024-07-29 at 13:00 PM EDT
+// Generated on 2024-08-01 at 15:00 PM EDT
 
 import { WordItem } from '../db';
-import { SuccessMessage } from '../types/gameTypes';
+import { SuccessMessage, ErrorMessage, HintMessage, GameType } from '../types/gameTypes';
 import { CONFIG } from '../config/config';
 
 export interface FormattedAnswer extends WordItem {
@@ -37,15 +37,66 @@ export const formatAnswer = (item: WordItem): FormattedAnswer => {
   };
 };
 
+const isValidLetterCombination = (input: string, root: string, subtopic: string): boolean => {
+  const allowedLetters = (root + subtopic).toUpperCase();
+  const inputLetters = input.toUpperCase();
+
+  if (inputLetters.length !== allowedLetters.length) return false;
+
+  const allowedLetterCount = new Map<string, number>();
+  const inputLetterCount = new Map<string, number>();
+
+  for (const letter of allowedLetters) {
+    allowedLetterCount.set(letter, (allowedLetterCount.get(letter) || 0) + 1);
+  }
+
+  for (const letter of inputLetters) {
+    inputLetterCount.set(letter, (inputLetterCount.get(letter) || 0) + 1);
+  }
+
+  if (allowedLetterCount.size !== inputLetterCount.size) return false;
+
+  for (const [letter, count] of allowedLetterCount) {
+    if (inputLetterCount.get(letter) !== count) return false;
+  }
+
+  return true;
+};
+
 export const processAnswer = (
   input: string,
   answerSet: FormattedAnswer[],
-  displayedAnswers: FormattedAnswer[]
-): { newAnswer: FormattedAnswer | null; isValid: boolean; isRepeated: boolean } => {
+  displayedAnswers: FormattedAnswer[],
+  isBingoStem: boolean = false
+): { newAnswer: FormattedAnswer | null; isValid: boolean; isRepeated: boolean; message: ErrorMessage | HintMessage | null } => {
   const uppercaseInput = input.toUpperCase();
 
+  if (answerSet.length === 0) {
+    return { newAnswer: null, isValid: false, isRepeated: false, message: null };
+  }
+
+  const currentScenario = answerSet[0];
+
+  if (isBingoStem) {
+    // For BingoStem, first check if the letter combination is valid
+    if (!isValidLetterCombination(uppercaseInput, currentScenario.root, currentScenario.subtopic)) {
+      return { 
+        newAnswer: null, 
+        isValid: false, 
+        isRepeated: false,
+        message: {
+          text: `Answer must include only the letters <span class="root">${currentScenario.root.toUpperCase()}</span> + <span class="root">${currentScenario.subtopic.toUpperCase()}</span>.`
+        }
+      };
+    }
+  }
+
   // Check if the input matches any answer in the answerSet
-  const matchingAnswer = answerSet.find(item => item.answer.toUpperCase() === uppercaseInput);
+  const matchingAnswer = answerSet.find(item => 
+    isBingoStem 
+      ? item.answerWord.toUpperCase() === uppercaseInput
+      : item.answer.toUpperCase() === uppercaseInput
+  );
 
   if (matchingAnswer) {
     // Check if this answer has already been displayed
@@ -57,41 +108,43 @@ export const processAnswer = (
       return { 
         newAnswer: matchingAnswer,
         isValid: true,
-        isRepeated: false
+        isRepeated: false,
+        message: null
       };
     } else {
       return {
         newAnswer: null,
         isValid: true,
-        isRepeated: true
+        isRepeated: true,
+        message: null
       };
     }
   }
 
   // If no matching answer found, create an invalid answer
-  if (answerSet.length > 0) {
-    const lexiconName = CONFIG.LEXICON_NAME || "this lexicon";
-    const invalidAnswer: FormattedAnswer = {
-      ...answerSet[0],
-      answerWord: answerSet[0].subtopic === 'before' ? uppercaseInput + answerSet[0].root : answerSet[0].root + uppercaseInput,
-      formattedDefinition: `Not a valid word in ${lexiconName}`,
-      answer: uppercaseInput,
-      takesS: ''
+  const lexiconName = CONFIG.LEXICON_NAME || "this lexicon";
+  const invalidAnswer: FormattedAnswer = {
+    ...currentScenario,
+    answerWord: isBingoStem ? uppercaseInput : (currentScenario.subtopic === 'before' ? uppercaseInput + currentScenario.root : currentScenario.root + uppercaseInput),
+    formattedDefinition: `Not a valid word in ${lexiconName}`,
+    answer: uppercaseInput,
+    takesS: ''
+  };
+
+  const isAlreadyDisplayed = displayedAnswers.some(
+    displayed => displayed.answerWord === invalidAnswer.answerWord
+  );
+
+  if (!isAlreadyDisplayed) {
+    return { 
+      newAnswer: invalidAnswer, 
+      isValid: false, 
+      isRepeated: false,
+      message: { text: invalidAnswer.formattedDefinition }
     };
-
-    const isAlreadyDisplayed = displayedAnswers.some(
-      displayed => displayed.answerWord === invalidAnswer.answerWord
-    );
-
-    if (!isAlreadyDisplayed) {
-      return { newAnswer: invalidAnswer, isValid: false, isRepeated: false };
-    } else {
-      return { newAnswer: null, isValid: false, isRepeated: true };
-    }
+  } else {
+    return { newAnswer: null, isValid: false, isRepeated: true, message: null };
   }
-
-  // If there's no answerSet, return null
-  return { newAnswer: null, isValid: false, isRepeated: false };
 };
 
 export const processRemainingAnswers = (
@@ -128,7 +181,8 @@ export const processRemainingAnswers = (
 
 export const calculateSuccessMessage = (
   answerSet: FormattedAnswer[],
-  displayedAnswers: FormattedAnswer[]
+  displayedAnswers: FormattedAnswer[],
+  gameType: GameType
 ): SuccessMessage => {
   const correctAnswers = answerSet.filter(item => 
     item.answer !== '-' && 
@@ -145,10 +199,17 @@ export const calculateSuccessMessage = (
   );
 
   if (answerSet.every(item => item.answer === '-')) {
-    return {
-      text: `There are no letters that can go ${answerSet[0].subtopic} ${answerSet[0].root.toUpperCase()}.`,
-      class: 'all-words'
-    };
+    if (gameType === 'AddOne') {
+      return {
+        text: `There are no letters that can go ${answerSet[0].subtopic} <span class="root">${answerSet[0].root.toUpperCase()}</span>.`,
+        class: 'all-words'
+      };
+    } else if (gameType === 'BingoStem') {
+      return {
+        text: `There are no bingos that can be made from <span class="root">${answerSet[0].root.toUpperCase()}</span> + <span class="root">${answerSet[0].subtopic.toUpperCase()}</span>.`,
+        class: 'all-words'
+      };
+    }
   } else if (correctAnswers.length === 0) {
     return {
       text: `There are no valid words for this scenario.`,

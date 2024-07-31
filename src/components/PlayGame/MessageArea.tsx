@@ -1,4 +1,4 @@
-// Generated on 2024-07-28 at 23:00 PM EDT
+// Generated on 2024-08-01 at 10:45 AM EDT
 
 import React from 'react';
 import { SuccessMessage, ErrorMessage, HintMessage } from '../../types/gameTypes';
@@ -19,22 +19,16 @@ const MessageArea: React.FC<MessageAreaProps> = ({
   return (
     <div className="message-area">
       {showHint && hint && (
-        <div className="hint-message">Hint: {hint.text}</div>
+        <div className="hint-message" dangerouslySetInnerHTML={{ __html: hint.text }} />
       )}
       {errorMessage && (
         <div className="error-message">{errorMessage.text}</div>
       )}
       {successMessage && (
-        <div className={`success-message ${successMessage.class}`}>
-          {successMessage.text.includes('There are no letters that can go') ? (
-            <>
-              {successMessage.text.split(' ').slice(0, -1).join(' ')}{' '}
-              <span className="root">{successMessage.text.split(' ').pop()}</span>
-            </>
-          ) : (
-            successMessage.text
-          )}
-        </div>
+        <div 
+          className={`success-message ${successMessage.class}`}
+          dangerouslySetInnerHTML={{ __html: successMessage.text }}
+        />
       )}
     </div>
   );

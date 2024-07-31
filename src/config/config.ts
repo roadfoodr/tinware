@@ -13,5 +13,6 @@ export const CONFIG = {
   // Game-wide settings
   GAME: {
     TRANSITION_DELAY_MS: 300,
+    BINGO_STEM_INPUT_LENGTH: 7,
   }
 };
