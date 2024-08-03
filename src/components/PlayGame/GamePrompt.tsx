@@ -1,25 +1,23 @@
-// Generated on 2024-07-31 at 11:30 AM EDT
-
 import React from 'react';
-import { GameType } from '../../types/gameTypes';
+import { useGameContext } from '../../context/GameContext';
 
-interface GamePromptProps {
-  selectedTopic: string;
-  gametype: GameType;
-  subtopic: string;
-  root: string;
-}
+const GamePrompt: React.FC = () => {
+  const { gameState, selectedTopic } = useGameContext();
 
-const GamePrompt: React.FC<GamePromptProps> = ({ selectedTopic, gametype, subtopic, root }) => {
+  if (!gameState.answerSet.length) return null;
+
+  const { gameType } = gameState;
+  const { subtopic, root } = gameState.answerSet[0];
+
   return (
     <div className="game-prompt">
       <h2>Challenge: {selectedTopic}</h2>
-      {gametype === "AddOne" && (
+      {gameType === "AddOne" && (
         <p>
           Which letters go <strong>{subtopic}</strong> the word stem?
         </p>
       )}
-      {gametype === "BingoStem" && (
+      {gameType === "BingoStem" && (
         <>
           <p>
             Enter seven letters to form bingos with the given rack:

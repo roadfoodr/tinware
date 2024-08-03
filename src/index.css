@@ -1,5 +1,3 @@
-/* Generated on 2024-07-09 at 15:45 PM EDT */
-
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -27,10 +25,20 @@ a:hover {
 body {
   margin: 0;
   display: flex;
-  place-items: center;
+  align-items: flex-start;
+  justify-content: left;
   min-width: 320px;
   min-height: 100vh;
-  padding-top: 50px;
+  padding-top: 90px;
+}
+
+#root {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 5px;
+  padding: 0;
+  box-sizing: border-box;
+  justify-content: left;
 }
 
 h1 {
@@ -116,9 +124,6 @@ button:focus-visible {
   margin: 0 0.5em;
 }
 
-.display-area {
-  margin-top: 1em;
-}
 
 .answer-row {
   margin-bottom: 0.5em;
@@ -220,7 +225,19 @@ button:focus-visible {
 .pure-button {
   margin-right: 0.5em;
   margin-bottom: 0.5em;
+  padding-left: .75em;
+  padding-right: .75em;
+  
 }
+
+.pure-button:not(:last-child) {
+  margin-right: 0.5em;
+}
+
+.pure-button:last-child {
+  margin-right: 0;
+}
+
 
 h2 {
   margin-bottom: 1em;
@@ -231,11 +248,52 @@ h2 {
   color: #888;
 }
 
-/* New styles for BingoStem */
-.game-prompt {
+/* Updated and new styles for layout changes */
+
+.pure-g {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  max-width: 800px;
+}
+
+.pure-u-1 {
+  width: 100%;
+  max-width: 800px;
+  justify-content: center;
+
+  padding: 0 5px;
+  box-sizing: border-box;
+}
+
+.game-prompt,
+.input-area {
+  width: 96%;
+  padding: 0% 2%;
   text-align: center;
 }
 
+.control-buttons {
+  width: 100%;
+  text-align: center;
+}
+
+.message-area {
+  width: 96%;
+  padding: 0% 2%;
+  text-align: center;
+}
+
+.display-area {
+  width: 96%;
+  padding: 0% 2%;
+  text-align: left;
+  margin-top: 1em;
+}
+
+/* New styles for BingoStem */
 .bingo-stem-rack {
   font-size: 1.2em;
   margin-top: 0.5em;

@@ -1,5 +1,3 @@
-// Generated on 2024-07-31 at 18:45 PM EDT
-
 import { WordItem } from '../db';
 import { getFromIndexedDB, clearCache } from '../services/DataInitializer';
 import { db } from '../db';
@@ -17,6 +15,7 @@ export const selectTopic = async (topic: string): Promise<{
   filteredData: WordItem[];
   scenarios: string[];
 }> => {
+  console.log('Selecting topic:', topic);
   let filteredData: WordItem[];
   if (topic === 'All Words') {
     filteredData = await db.wordList.toArray();
@@ -24,16 +23,22 @@ export const selectTopic = async (topic: string): Promise<{
     filteredData = await db.wordList.where('topic').equals(topic).toArray();
   }
   
+  console.log('Filtered data before processing:', filteredData);
+
   // Ensure all string comparisons are done safely
   filteredData = filteredData.map(item => ({
     ...item,
-    answerWord: String(item.answerWord),
-    definition: String(item.definition),
-    scenarioID: String(item.scenarioID)
+    answerWord: String(item.answerWord || ''),
+    definition: String(item.definition || ''),
+    scenarioID: String(item.scenarioID || '')
   }));
+
+  console.log('Filtered data after processing:', filteredData);
 
   // Get unique scenario IDs
   const scenarios = Array.from(new Set(filteredData.map(item => item.scenarioID)));
+
+  console.log('Unique scenarios:', scenarios);
 
   return { filteredData, scenarios };
 };

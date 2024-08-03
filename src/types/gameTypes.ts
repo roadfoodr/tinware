@@ -1,5 +1,3 @@
-// Generated on 2024-08-01 at 10:45 AM EDT
-
 import { WordItem } from '../db';
 
 export type GameType = 'AddOne' | 'BingoStem';

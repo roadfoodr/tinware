@@ -1,15 +1,11 @@
-// Generated on 2024-07-28 at 23:15 PM EDT
-
 import React from 'react';
-import { FormattedAnswer } from '../../types/gameTypes';
+import { useGameContext } from '../../context/GameContext';
 import { CONFIG } from '../../config/config';
 
-interface DisplayAreaProps {
-  displayedAnswers: FormattedAnswer[];
-  showAllAnswers: boolean;
-}
+const DisplayArea: React.FC = () => {
+  const { gameState } = useGameContext();
+  const { displayedAnswers, showAllAnswers } = gameState;
 
-const DisplayArea: React.FC<DisplayAreaProps> = ({ displayedAnswers, showAllAnswers }) => {
   return (
     <div className="display-area">
       {displayedAnswers.filter(item => item.formattedDefinition).map((item, index) => {

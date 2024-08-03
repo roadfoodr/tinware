@@ -1,0 +1,31 @@
+```mermaid
+graph TD
+    A[Start] --> B{Topic Selected?}
+    B -->|No| C[Display Topic Selection]
+    C --> B
+    B -->|Yes| D[Initialize Game]
+    D --> E[Load Word Data]
+    E --> F[Select Random Scenario]
+    F --> G{Determine Game Type}
+    G -->|AddOne| H[Display AddOne Game]
+    G -->|BingoStem| I[Display BingoStem Game]
+    H --> J[User Input]
+    I --> J
+    J --> K{Valid Input?}
+    K -->|Yes| L[Process Answer]
+    K -->|No| M[Display Error]
+    L --> N[Update Display]
+    M --> J
+    N --> O{More Words?}
+    O -->|Yes| J
+    O -->|No| P[Show All Answers]
+    P --> Q{Retry?}
+    Q -->|Yes| R[Reset Current Scenario]
+    R --> J
+    Q -->|No| S{Next Word?}
+    S -->|Yes| F
+    S -->|No| T[End Game]
+    T --> U[Display Results]
+    U --> V[Return to Topic Selection]
+    V --> B
+```

@@ -2,21 +2,71 @@
 
 ## 1. Introduction
 
-This Functional Specification Document (FSD) outlines the detailed functionality of the Tinware application, with a focus on the scenario-based gameplay and user interactions in various game states for both AddOne and BingoStem game types.
+Tinware is a React-based web application designed to help users practice and improve their knowledge of word lists through interactive word games. The application currently features two game types: AddOne and BingoStem, with a modular structure to facilitate the addition of new game types in the future.
 
 ## 2. System Overview
 
-Tinware is a web-based educational word game that challenges users to identify valid words using different game modes. The application uses React for the frontend, with data stored in IndexedDB using Dexie.
+Tinware is built using React with TypeScript for the frontend, with data stored in IndexedDB using Dexie.js. The system employs a context-based state management approach for improved modularity and scalability.
 
-## 3. Data Structure
+### 2.1 Key Technologies
 
-### 3.1 Word Item Structure
+- React with TypeScript
+- Dexie.js for IndexedDB interactions
+- PureCSS for styling
+- FontAwesome for icons
+
+## 3. Application Structure
+
+### 3.1 Main Components
+
+- App: The root component that manages the overall application state and routing.
+- GameProvider: Wraps the game components and provides the GameContext.
+- NavBar: Displays the Tinware logo, title, and contains the Settings menu.
+- SelectGame: Allows users to choose a topic and start the game.
+- PlayGame: Orchestrates the gameplay and manages game-specific logic.
+- GameContainer: The main game interface that composes all game components.
+
+### 3.2 Game-Specific Components
+
+- AddOneGame: Implements the AddOne game type.
+- BingoStemGame: Implements the BingoStem game type.
+
+### 3.3 Shared Components
+
+- GamePrompt: Displays instructions and current game information.
+- InputArea: Renders the appropriate input component based on game type.
+- ControlButtons: Provides game control buttons.
+- MessageArea: Displays error messages, success messages, and hints.
+- DisplayArea: Shows the list of answered and remaining words.
+
+### 3.4 Custom Hooks
+
+- useGameContext: Provides access to the centralized game state.
+- useCommonGameLogic: Handles shared game logic across different game types.
+- useAddOneLogic: Implements AddOne game-specific logic.
+- useBingoStemLogic: Implements BingoStem game-specific logic.
+- useGameInput: Manages input handling for both game types.
+
+### 3.5 Utility Functions
+
+- GameUtils.ts: Contains shared utility functions used across different game types:
+  - isValidLetterCombination: Validates letter combinations for BingoStem game.
+  - processRemainingAnswers: Processes remaining answers after a game round.
+  - calculateSuccessMessage: Generates success messages based on game results.
+
+- answerProcessor.ts: Contains functions specific to processing answers:
+  - formatAnswer: Formats a word item into a displayable answer.
+  - processAnswer: Processes a user's answer input.
+
+## 4. Data Structure
+
+### 4.1 Word Item Structure
 ```typescript
 interface WordItem {
   id?: number;
   taskID: string;
   topic: string;
-  gametype: string;
+  gametype: GameTypeName;
   subtopic: string;
   root: string;
   answer: string;
@@ -28,7 +78,7 @@ interface WordItem {
 }
 ```
 
-### 3.2 Formatted Answer Structure
+### 4.2 Formatted Answer Structure
 ```typescript
 interface FormattedAnswer extends WordItem {
   formattedDefinition: string;
@@ -38,266 +88,179 @@ interface FormattedAnswer extends WordItem {
 }
 ```
 
-## 4. User Interface Components
+### 4.3 Game State Structure
+```typescript
+interface GameState {
+  answerSet: FormattedAnswer[];
+  userInput: string;
+  displayedAnswers: FormattedAnswer[];
+  showAllAnswers: boolean;
+  skipButtonLabel: string;
+  errorMessage: ErrorMessage | null;
+  successMessage: SuccessMessage | null;
+  hint: HintMessage | null;
+  showHint: boolean;
+  isTransitioning: boolean;
+  shouldFocusInput: boolean;
+  showRetry: boolean;
+  gameType: GameType;
+}
+```
 
-### 4.1 NavBar
-- Displays the Tinware logo and title
-- Contains a Settings dropdown menu with a "Clear Cache" option
-
-### 4.2 SelectGame
-- Dropdown menu for topic selection
-- Includes "All Words" option and all available topics
-- Initiates game start upon topic selection
-
-### 4.3 PlayGame
-- Main game interface composed of:
-  - GamePrompt
-  - InputArea
-  - ControlButtons
-  - MessageArea
-  - DisplayArea
-
-## 5. Gameplay Flow and Messaging
+## 5. Game Flow and User Interaction
 
 ### 5.1 Game Initialization
 
-#### 5.1.1 Topic Selection
-- User selects a topic from the dropdown menu
-- System filters word data based on the selected topic
-- A random scenario is selected from the filtered data
-- If no data is available for the selected topic:
-  ```
-  Message: "No data available for the selected topic."
-  ```
+1. User selects a topic from the dropdown menu.
+2. System filters word data based on the selected topic.
+3. A random scenario is selected from the filtered data.
+4. The appropriate game type is determined based on the scenario.
+5. The GameContext is initialized with the game state.
 
-#### 5.1.2 Scenario Selection
-- System randomly selects a scenario from the filtered data
-- If no valid scenarios are found:
-  ```
-  Message: "No valid scenarios found for the selected topic and gametype."
-  ```
+### 5.2 Game Controls
 
-### 5.2 Gameplay
+The game controls are presented in the following order, with visibility dependent on the game state:
 
-#### 5.2.1 Game Prompt
-- Display the selected topic
-- For "AddOne" game type:
-  ```
-  Prompt: "Which letters go [before|after] the word stem?"
-  ```
-  Where [before|after] is determined by the `subtopic` field of the current scenario.
-- For "BingoStem" game type:
-  ```
-  Prompt: "Enter seven letters to form bingos with the given rack:"
-  [ROOT] + [SUBTOPIC]
-  ```
-  Where [ROOT] is the root word and [SUBTOPIC] is the additional letter.
+1. Skip Word: Visible before "No More Words" is pressed.
+2. Retry: Visible after "No More Words" is pressed.
+3. Show Hint: Visible before "No More Words" is pressed.
+4. No More Words: Visible before it's pressed.
+5. Next Word: Visible after "No More Words" is pressed.
 
-#### 5.2.2 User Input Processing
+### 5.3 Input Handling
 
-##### AddOne
-- Valid input: Single alphabetic character (case-insensitive)
-- Invalid input: Ignored silently (no error message)
-- Space key: Treated as "No More Words" action
+#### 5.3.1 AddOne Game
 
-##### BingoStem
-- Valid input: Seven alphabetic characters (case-insensitive)
-- Invalid input: Non-alphabetic characters are ignored
-- Space key: Treated as "No More Words" action
-- Enter key: Submits the current input if 7 letters are entered
+- The input area accepts a single letter input.
+- After each input (valid, invalid, or repeated):
+  - The input area is cleared immediately.
+  - The focus remains on the input area for the next entry.
+- For valid new entries:
+  - The word is displayed in the answer list.
+  - No error message is shown.
+- For invalid new entries:
+  - An error message is displayed.
+  - The invalid word is added to the answer list (marked as invalid).
+- For repeated entries (valid or invalid):
+  - No change is made to the answer list.
+  - No error message is displayed.
+  - The user can immediately enter a new letter.
 
-#### 5.2.3 Answer Validation
+#### 5.3.2 BingoStem Game
 
-##### AddOne
-- If the input forms a valid word:
-  - Display the word in the DisplayArea with its definition
-  - Format: `[WORD]: [Definition]`
-- If the input forms an invalid word:
-  - Display the word in the DisplayArea
-  - Format: `[WORD]: Not a valid word in [LEXICON_NAME]`
+- The input area accepts a 7-letter word.
+- The user must use the given rack (root word + additional letter) to form words.
+- The user input is pre-checked: if the 7 letters entered are not the same letters and letter counts as the given rack, a hint is issued, input is cleared and refocused.
+- Validation occurs when the user submits a 7-letter word that passes the pre-check.
+- Invalid or repeated entries are handled similarly to the AddOne game.
 
-##### BingoStem
-- If the submitted word is valid:
-  - Display the word in the DisplayArea with its definition
-  - Format: `[WORD]: [Definition]`
-- If the submitted word is invalid:
-  - Display the word in the DisplayArea
-  - Format: `[WORD]: Not a valid word in [LEXICON_NAME]`
+### 5.4 Answer Processing
 
-For both game types:
-- If `canAddS` is true:
-  ```
-  Additional info: "can add S: [WORD]S"
-  ```
-- If `canAddS` is false and word doesn't end in 'S':
-  ```
-  Additional info: "can not add S"
-  ```
-- If `canAddS` is false and word ends in 'S':
-  ```
-  Additional info: "already ends in S"
-  ```
-- The word is displayed as a hyperlink to the Merriam-Webster Scrabble dictionary
-- New answers (valid or invalid) are added to the beginning of the display list
-- No explicit "Valid word" message is displayed for correct guesses
+- Valid answers are displayed in the DisplayArea component.
+- Invalid answers are shown with an error message and added to the DisplayArea (marked as invalid).
+- Repeated entries are ignored, and the input is cleared.
+- The processAnswer function in answerProcessor.ts handles the core logic for processing user inputs.
 
-#### 5.2.4 Hint System
-- When "Show Hint" is clicked, display in MessageArea:
-  ```
-  Message: "Hint: [hint text from WordItem]"
-  ```
-- If no hint is available:
-  ```
-  Message: "Hint: There are [X] possibilities."
-  ```
-  Where [X] is the count of valid answers for the current scenario.
-- The "Show Hint" button is disabled when a hint is already being displayed
+### 5.5 Game Completion
 
-### 5.3 End of Round
+- When the user believes they've found all words, they click "No More Words".
+- The processRemainingAnswers function from GameUtils.ts is used to reveal remaining valid words in the DisplayArea.
+- A success message is generated using the calculateSuccessMessage function from GameUtils.ts.
 
-#### 5.3.1 No More Words
-When user indicates no more words or all valid words have been found:
+### 5.6 Hint Functionality
 
-- If there are no valid answers (root word only):
-  ```
-  Message: "There are no letters that can go [before|after] [ROOT]." (for AddOne)
-  Message: "There are no valid bingos for the rack [ROOT] + [SUBTOPIC]." (for BingoStem)
-  ```
-  Where [ROOT] is displayed in uppercase.
+- The "Show Hint" button is available before "No More Words" is pressed.
+- When the hint is displayed:
+  - The hint text appears in the message area.
+  - The focus automatically returns to the input area.
+  - The "Show Hint" button is disabled to prevent multiple hint requests.
+- The hint message now includes the count of identified valid answers and the total count of possible valid words.
+- If there are no valid words for the current scenario, the hint displays "There are no possible valid words".
 
-- If all words were correctly identified:
-  ```
-  Message: "You correctly identified all [X] word(s)!"
-  ```
-  Where [X] is the total number of valid words.
+### 5.7 Retry Functionality
 
-- If some words were missed:
-  ```
-  Message: "You identified [Y] out of [X] word(s)"
-  ```
-  Where [Y] is the number of correctly identified words and [X] is the total number of valid words.
+- The "Retry" button is available after "No More Words" is pressed.
+- When Retry is activated, the same scenario is restarted.
 
-#### 5.3.2 Displaying Remaining Words
-- Show any unidentified valid words in the DisplayArea
-- Format: `[WORD]: [Definition]`
-- Remaining words are added to the beginning of the display list
+### 5.8 Next Word Functionality
 
-#### 5.3.3 Retry Option
-- After "No More Words" is selected, a "Retry" button becomes visible
-- When clicked, it resets the game state using the current scenario, allowing the user to try again with the same word set
+- The "Next Word" button is available after "No More Words" is pressed.
+- When Next Word is activated, a new scenario in current topic is restarted.
 
-### 5.4 Transition to Next Word
-- Brief transition period (defined in CONFIG.GAME.TRANSITION_DELAY_MS) where input is disabled
-- New scenario is selected and displayed
+### 5.9 Focus Management
 
-### 5.5 Retry Transition
-- Brief transition period (defined in CONFIG.GAME.TRANSITION_DELAY_MS) where input is disabled
-- Same scenario is reset and displayed
+- The input area receives focus:
+  - At the start of a new game scenario.
+  - After displaying a hint.
+  - When transitioning between words.
+- Focus is managed using React's `useRef` and `useEffect` hooks to ensure proper timing and component lifecycle management.
 
-### 5.6 Message Display Hierarchy
-- Messages are displayed in the following order of priority:
-  1. Hints (when shown)
-  2. Error messages (e.g., for invalid words)
-  3. Success messages (e.g., end of round summary)
-- Only one type of message is displayed at a time
 
-## 6. User Interface Components
+## 6. State Management
 
-### 6.1 DisplayArea
-- Shows the list of answered and remaining words
-- Uses color-coding for answers: 
-  - Green for valid
-  - Dark gray with strikethrough for invalid
-  - Red for missed valid answers
-- Displays words as hyperlinks to the Merriam-Webster Scrabble dictionary for valid and missed answers
+### 6.1 GameContext
 
-### 6.2 MessageArea
-- Handles the display of hints, error messages, and success messages
-- Ensures proper ordering of messages as per the Message Display Hierarchy
+- Provides centralized state management for the entire game.
+- Includes game state, current scenario, and selected topic.
+- Accessible through the useGameContext hook.
 
-### 6.3 ControlButtons
-- Includes "Skip Word"/"Next Word", "Show Hint", "No More Words", and "Retry" buttons
-- The "Show Hint" button is disabled when:
-  - A hint is already being displayed
-  - No hint is available for the current scenario
-- The "Skip Word" button changes to "Next Word" after the end of a round
-- The "Retry" button appears after the end of a round
+### 6.2 Game Logic Hooks
 
-### 6.4 InputArea
-- For AddOne:
-  - Displays a single-letter input field
-  - Positions the input field before or after the root word based on the current scenario's subtopic
-- For BingoStem:
-  - Displays a seven-letter input field
-  - Shows the rack (ROOT + SUBTOPIC) above the input field
-- Submit button is present for BingoStem and is disabled until 7 letters are entered
+- useCommonGameLogic: Handles shared game logic (e.g., showing hints, transitioning between words). Imports processRemainingAnswers and calculateSuccessMessage from GameUtils.ts.
+- useAddOneLogic and useBingoStemLogic: Implement game-specific logic.
+- useGameInput: Manages input handling for both game types.
 
-## 7. Game State Management
+## 7. Data Management
 
-### 7.1 useGameLogic Hook
-- Manages the overall game state
-- Handles user input processing for both AddOne and BingoStem
-- Manages the display and hiding of hints
-- Handles the transition between scenarios and rounds
-- Implements retry functionality for repeating a scenario
+### 7.1 Data Loading
 
-## 8. Data Management
+- CSV data is loaded from an S3 bucket.
+- Data is parsed and stored in IndexedDB using Dexie.
+- Subsequent app launches use cached data unless cleared.
 
-### 8.1 Data Loading
-- CSV data is loaded from an S3 bucket
-- Data is parsed and stored in IndexedDB using Dexie
-- Subsequent app launches use cached data unless cleared
+### 7.2 Cache Clearing
 
-### 8.2 Cache Clearing
-- Users can clear the cached data through the Settings menu
-- Clearing cache reloads data from the S3 bucket
+- Users can clear the cached data through the Settings menu.
 
-## 9. Error Handling
+## 8. Configuration
 
-### 9.1 Data Loading Errors
-If there's an error fetching or processing the CSV file:
-```
-Message: "Failed to fetch or process the CSV file: [error message]"
-```
+A centralized configuration file (config.ts) contains global settings and game-specific parameters:
 
-### 9.2 IndexedDB Errors
-If there's an error storing data in IndexedDB:
-```
-Message: "Error storing data in IndexedDB: [error message]"
-```
+- Dictionary URL
+- Lexicon name
+- Transition delay times
+- Game-specific settings (e.g., BingoStem input length)
 
-## 10. Performance Considerations
+## 9. Accessibility
 
-### 10.1 Data Caching
-- CSV data is cached in IndexedDB after initial load
-- Subsequent app launches use cached data unless cleared
+- Proper ARIA labels are used for input fields to improve screen reader compatibility.
+- Focus management ensures that users can navigate the game using a keyboard.
+- Color contrast ratios meet accessibility standards.
 
-### 10.2 Transition Timing
-- Transition period between scenarios is defined in CONFIG.GAME.TRANSITION_DELAY_MS
+## 10. Responsiveness
 
-## 11. Accessibility
+The UI adapts to different screen sizes:
+- Desktop: Full layout with side-by-side components.
+- Tablet: Vertically stacked components with full width.
+- Mobile: Simplified layout with scrollable sections.
 
-### 11.1 Keyboard Navigation
-- Space key can be used to trigger "No More Words" when appropriate
-- Enter key can be used to submit words in BingoStem mode
+## 11. Future Enhancements
 
-### 11.2 Color Coding
-- Use of color is supplemented with text or symbols to ensure accessibility for color-blind users
+- Implementation of additional game types (e.g., Flashcard, Unscramble).
+- User accounts and progress tracking across sessions.
+- Leaderboards and social features.
+- Adaptive learning algorithm to personalize word difficulty.
 
-## 12. Responsiveness
+## 12. Error Handling and Logging
 
-The UI should adapt to different screen sizes:
-- Desktop: Full layout with side-by-side components
-- Tablet: Vertically stacked components with full width
-- Mobile: Simplified layout with scrollable sections
+- Comprehensive error messages for user feedback.
+- Error logging for debugging and improvement.
+- Graceful degradation in case of data loading failures.
 
-## 13. Configuration
+## 13. Security Considerations
 
-### 13.1 Global Configuration
-- A centralized configuration file (config.ts) contains global settings:
-  - DICT_URL: URL for the Merriam-Webster Scrabble dictionary
-  - LEXICON_NAME: Name of the current lexicon (e.g., "NWL23")
-  - GAME.TRANSITION_DELAY_MS: Duration of transition delay between scenarios
-  - GAME.BINGO_STEM_INPUT_LENGTH: Number of letters required for BingoStem input (7)
+- Secure handling of user data (for future user account feature).
+- Protection against common web vulnerabilities (XSS, CSRF).
+- Regular security audits and updates.
 
-This Functional Specification Document provides a comprehensive breakdown of Tinware's functionality, with a particular focus on the scenario-based gameplay, user interactions, and component behaviors in various game states for both AddOne and BingoStem game types. It outlines the specific behaviors, error handling, and user interface elements that make up the Tinware experience, including the scenario selection, retry functionality, and centralized configuration for timing-related operations.
+This Functional Specification Document provides a comprehensive overview of the refactored Tinware application, including its functionality, structure, and future plans. It serves as a guide for development, maintenance, and future enhancements of the application.
