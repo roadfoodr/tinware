@@ -7,6 +7,7 @@ import { WordItem } from './db';
 import { fetchTopics, selectTopic, restartGame, clearAppCache, getRandomScenario } from './utils/appHelpers';
 import { GameType } from './types/gameTypes';
 import { GameProvider } from './context/GameContext';
+import { AppSettingsProvider } from './context/AppSettingsContext';
 
 const App: React.FC = () => {
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -76,31 +77,33 @@ const App: React.FC = () => {
   };
 
   return (
-    <GameProvider>
-      <div className="pure-u-1">
-        <NavBar onRestart={handleRestart} onClearCache={handleClearCache} />
-      </div>
-      <div className="pure-g">
+    <AppSettingsProvider>
+      <GameProvider>
         <div className="pure-u-1">
-          <DataInitializer onDataLoaded={() => setDataLoaded(true)} />
-          {dataLoaded && !selectedTopic && (
-            <SelectGame topics={topics} onSelectTopic={handleSelectTopic} />
-          )}
-          {dataLoaded && selectedTopic && gameData.length > 0 && (
-            <PlayGame
-              data={gameData}
-              gametype={currentGameType}
-              onSkipWord={handleSkipWord}
-              selectedTopic={selectedTopic}
-              onGameTypeChange={setCurrentGameType}
-            />
-          )}
-          {dataLoaded && selectedTopic && gameData.length === 0 && (
-            <div>No data available for the selected topic. (Topic: {selectedTopic}, All topic data: {allTopicData.length}, Scenarios: {scenarios.length})</div>
-          )}
+          <NavBar onRestart={handleRestart} onClearCache={handleClearCache} />
         </div>
-      </div>
+        <div className="pure-g">
+          <div className="pure-u-1">
+            <DataInitializer onDataLoaded={() => setDataLoaded(true)} />
+            {dataLoaded && !selectedTopic && (
+              <SelectGame topics={topics} onSelectTopic={handleSelectTopic} />
+            )}
+            {dataLoaded && selectedTopic && gameData.length > 0 && (
+              <PlayGame
+                data={gameData}
+                gametype={currentGameType}
+                onSkipWord={handleSkipWord}
+                selectedTopic={selectedTopic}
+                onGameTypeChange={setCurrentGameType}
+              />
+            )}
+            {dataLoaded && selectedTopic && gameData.length === 0 && (
+              <div>No data available for the selected topic. (Topic: {selectedTopic}, All topic data: {allTopicData.length}, Scenarios: {scenarios.length})</div>
+            )}
+          </div>
+        </div>
       </GameProvider>
+    </AppSettingsProvider>
   );
 };
 

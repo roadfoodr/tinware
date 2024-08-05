@@ -3,9 +3,11 @@ import { useGameContext } from '../context/GameContext';
 import { FormattedAnswer, GameType } from '../types/gameTypes';
 import { processRemainingAnswers, calculateSuccessMessage } from '../utils/GameUtils';
 import { CONFIG } from '../config/config';
+import { useSounds } from '../hooks/useSounds';
 
 export const useCommonGameLogic = (onSkipWord: () => void) => {
   const { gameState, setGameState, currentScenario, setCurrentScenario } = useGameContext();
+  const { playSound } = useSounds();
 
   const handleNoMoreWords = useCallback(() => {
     if (!currentScenario) return;
@@ -16,6 +18,17 @@ export const useCommonGameLogic = (onSkipWord: () => void) => {
       const remainingAnswers = processRemainingAnswers(currentScenario, prev.displayedAnswers);
       const newDisplayedAnswers = [...remainingAnswers, ...prev.displayedAnswers];
       const successMessage = calculateSuccessMessage(currentScenario, newDisplayedAnswers, prev.gameType);
+
+      // Check if all valid words were identified
+      const allValidWordsIdentified = remainingAnswers.length === 0;
+      const noInvalidWordsSubmitted = prev.invalidSubmissionCount === 0;
+
+      // Play success sound if all valid words were identified, regardless of repeated entries
+      if (allValidWordsIdentified && noInvalidWordsSubmitted) {
+        playSound('scenarioSuccess');
+      } else {
+        playSound('scenarioComplete');
+      }
 
       return {
         ...prev,
@@ -28,8 +41,8 @@ export const useCommonGameLogic = (onSkipWord: () => void) => {
         userInput: '',
       };
     });
-  }, [currentScenario, setGameState]);
-
+  }, [currentScenario, setGameState, playSound]);
+      
   const handleNextWord = useCallback(() => {
     setGameState(prev => ({ 
       ...prev, 
@@ -63,6 +76,7 @@ export const useCommonGameLogic = (onSkipWord: () => void) => {
       hint: null,
       showHint: false,
       showRetry: false,
+      invalidSubmissionCount: 0,
     }));
     
     setTimeout(() => {
@@ -75,6 +89,7 @@ export const useCommonGameLogic = (onSkipWord: () => void) => {
   }, [currentScenario, setGameState]);
 
   const handleShowHint = useCallback(() => {
+    playSound('hintRequested');
     if (!currentScenario) return;
 
     const validAnswers = currentScenario.filter(item => 

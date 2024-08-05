@@ -40,6 +40,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     shouldFocusInput: false,
     showRetry: false,
     gameType: 'AddOne',
+    invalidSubmissionCount: 0,  // Add this line
   });
 
   const [currentScenario, setCurrentScenario] = useState<FormattedAnswer[] | null>(null);

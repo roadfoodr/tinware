@@ -50,7 +50,7 @@ export const processAnswer = (
         isValid: false, 
         isRepeated: false,
         message: {
-          text: `Answer must include only the letters <span class="root">${currentScenario.root.toUpperCase()}</span> + <span class="root">${currentScenario.subtopic.toUpperCase()}</span>.`
+          text: `Entry must include only the letters <span class="root">${currentScenario.root.toUpperCase()}</span> + <span class="root">${currentScenario.subtopic.toUpperCase()}</span>.`
         }
       };
     }

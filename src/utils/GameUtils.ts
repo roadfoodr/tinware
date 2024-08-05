@@ -74,7 +74,7 @@ export const calculateSuccessMessage = (
     correctAnswers.some(correctItem => correctItem.answerWord === item.answerWord)
   );
 
-  if (answerSet.every(item => item.answer === '-')) {
+  if (correctAnswers.length === 0) {
     if (gameType === 'AddOne') {
       return {
         text: `There are no letters that can go ${answerSet[0].subtopic} <span class="root">${answerSet[0].root.toUpperCase()}</span>.`,
@@ -86,11 +86,6 @@ export const calculateSuccessMessage = (
         class: 'all-words'
       };
     }
-  } else if (correctAnswers.length === 0) {
-    return {
-      text: `There are no valid words for this scenario.`,
-      class: 'all-words'
-    };
   } else if (identifiedCorrectAnswers.length === correctAnswers.length) {
     return {
       text: `You correctly identified all ${correctAnswers.length} word${correctAnswers.length > 1 ? 's' : ''}!`,

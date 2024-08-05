@@ -2,11 +2,12 @@ import { useCallback } from 'react';
 import { useGameContext } from '../context/GameContext';
 import { FormattedAnswer } from '../types/gameTypes';
 import { processAnswer } from '../utils/answerProcessor';
-import { isValidLetterCombination } from '../utils/GameUtils';
 import { CONFIG } from '../config/config';
+import { useSounds } from '../hooks/useSounds';
 
 export const useBingoStemLogic = () => {
   const { gameState, setGameState, currentScenario } = useGameContext();
+  const { playSound } = useSounds();
 
   const handleInputChange = useCallback((input: string) => {
     const filteredInput = input.replace(/[^A-Za-z]/g, '').toUpperCase();
@@ -36,6 +37,11 @@ export const useBingoStemLogic = () => {
       }
 
       if (newAnswer) {
+        if (isValid) {
+          playSound('validWord');
+        } else {
+          playSound('invalidWord');
+        }
         return {
           ...prev,
           userInput: '',
@@ -43,19 +49,23 @@ export const useBingoStemLogic = () => {
           errorMessage: null,
           successMessage: null,
           showHint: false,
+          invalidSubmissionCount: isValid ? prev.invalidSubmissionCount : prev.invalidSubmissionCount + 1,
         };
       }
 
+      // This case handles invalid letter combinations
+      playSound('hintRequested');
       return {
         ...prev,
         userInput: '',
-        errorMessage: message?.text.includes('Answer must include only the letters') ? null : message,
-        hint: message?.text.includes('Answer must include only the letters') ? message : null,
-        showHint: message?.text.includes('Answer must include only the letters'),
+        errorMessage: message?.text.includes('Entry must include only the letters') ? null : message,
+        hint: message?.text.includes('Entry must include only the letters') ? message : null,
+        showHint: message?.text.includes('Entry must include only the letters'),
         successMessage: null,
+        invalidSubmissionCount: prev.invalidSubmissionCount,
       };
     });
-  }, [currentScenario, setGameState]);
+  }, [currentScenario, setGameState, playSound]);
 
   return {
     handleInputChange,

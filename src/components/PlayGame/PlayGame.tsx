@@ -32,6 +32,7 @@ const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selecte
       hint: null,
       showHint: false,
       showRetry: false,
+      invalidSubmissionCount: 0,
     }));
   }, [data, gametype, selectedTopic, setCurrentScenario, setSelectedTopic, setGameState]);
 

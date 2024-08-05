@@ -44,6 +44,7 @@ export interface GameState {
   shouldFocusInput: boolean;
   showRetry: boolean;
   gameType: GameType;
+  invalidSubmissionCount: number;
 }
 
 export interface Scenario {

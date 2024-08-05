@@ -45,7 +45,6 @@ The primary purpose of Tinware is to:
 - Rack consists of a root word plus one additional letter
 - Players submit their seven-letter word for validation
 
-
 ### 4.4 User Interface
 - Clean, intuitive design with a responsive layout
 - Prominent display of the current challenge and word stem or rack
@@ -77,6 +76,7 @@ The primary purpose of Tinware is to:
 ### 4.9 Settings and Customization
 - Option to clear cached data
 - Centralized configuration for game settings (e.g., transition delays, input lengths)
+- Sound toggle feature allowing users to turn game sounds on or off
 - Future: User preferences for difficulty levels and game type priorities
 
 ### 4.10 Game Controls
@@ -84,6 +84,18 @@ The primary purpose of Tinware is to:
 - Dynamic visibility of buttons based on game state
 - "Skip Word" button available before revealing all answers
 - "Retry" button appears after all answers are revealed
+
+### 4.11 Sound System
+- Provides audio feedback for key game events to enhance user engagement
+- Includes five distinct sound types:
+  1. Valid Word Sound: Played when a user enters a correct word
+  2. Invalid Word Sound: Played when a user enters an incorrect word
+  3. Scenario Success Sound: Played when a user completes a scenario perfectly
+  4. Scenario Complete Sound: Played when a user finishes a scenario but doesn't meet all success criteria
+  5. Hint Requested Sound: Played when a user asks for a hint
+- Sound toggle control in the Settings menu allows users to easily turn sounds on or off
+- Sound preferences are remembered between sessions
+- Ensures only one sound plays at a time to avoid audio overlap
 
 ## 5. Technical Requirements
 
@@ -105,6 +117,10 @@ The primary purpose of Tinware is to:
 ### 5.5 Extensibility
 - Modular architecture allowing easy addition of new game types
 - Centralized configuration for game parameters
+
+### 5.6 Audio
+- Implements the use-sound library for managing and playing game sounds
+- Supports multiple audio file formats for cross-browser compatibility
 
 ## 6. Future Enhancements
 

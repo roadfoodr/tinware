@@ -14,6 +14,7 @@ Tinware is built using React with TypeScript for the frontend, with data stored 
 - Dexie.js for IndexedDB interactions
 - PureCSS for styling
 - FontAwesome for icons
+- use-sound library for audio feedback
 
 ## 3. Application Structure
 
@@ -46,6 +47,7 @@ Tinware is built using React with TypeScript for the frontend, with data stored 
 - useAddOneLogic: Implements AddOne game-specific logic.
 - useBingoStemLogic: Implements BingoStem game-specific logic.
 - useGameInput: Manages input handling for both game types.
+- useSounds: Manages sound playback for game events.
 
 ### 3.5 Utility Functions
 
@@ -195,7 +197,6 @@ The game controls are presented in the following order, with visibility dependen
   - When transitioning between words.
 - Focus is managed using React's `useRef` and `useEffect` hooks to ensure proper timing and component lifecycle management.
 
-
 ## 6. State Management
 
 ### 6.1 GameContext
@@ -244,23 +245,95 @@ The UI adapts to different screen sizes:
 - Tablet: Vertically stacked components with full width.
 - Mobile: Simplified layout with scrollable sections.
 
-## 11. Future Enhancements
+## 11. Sound System
+
+### 11.1 Sound Types
+
+Tinware includes five types of sounds to provide audio feedback for various game events:
+
+1. Valid Word Sound: Played when a user enters a valid word.
+2. Invalid Word Sound: Played when a user enters an invalid word.
+3. Scenario Success Sound: Played when a user successfully completes a scenario by identifying all valid words without any invalid submissions.
+4. Scenario Complete Sound: Played when a user completes a scenario (by pressing "No More Words") but hasn't met the criteria for scenario success.
+5. Hint Requested Sound: Played when a user requests a hint.
+
+### 11.2 Sound Management
+
+- Sounds are managed using the `useSounds` custom hook, which utilizes the `use-sound` library.
+- The `AppSettingsContext` includes a sound toggle feature, allowing users to turn game sounds on or off.
+- A UI control is provided in the Settings menu, accessible from the NavBar, allowing users to toggle sounds on or off during gameplay.
+- The sound toggle is represented by a button with appropriate icons (e.g., speaker icon for sound on, muted speaker for sound off) and text indicating the current state.
+- Sound preferences are persisted in local storage to remember user settings between sessions.
+
+### 11.3 Sound Playback Logic
+
+- In both AddOne and BingoStem game modes, appropriate sounds are played when processing user input for valid or invalid words.
+- The scenario success sound is played when all valid words in a scenario have been identified without any invalid submissions.
+- The scenario complete sound is played when a user finishes a scenario but hasn't met the criteria for full success.
+- The hint requested sound is played when a user clicks the "Show Hint" button.
+- Only one sound plays at a time; any currently playing sound is stopped before a new one starts.
+
+### 11.4 Implementation Details
+
+- Sound files are stored in the `assets` folder and imported into the `useSounds` hook.
+- The `playSound` function in the `useSounds` hook handles all sound playback, checking if sound is enabled in the app settings before playing.
+- Game logic in `useCommonGameLogic`, `useAddOneLogic`, and `useBingoStemLogic` hooks determines when to trigger sound playback based on game events.
+
+## 12. Future Enhancements
 
 - Implementation of additional game types (e.g., Flashcard, Unscramble).
 - User accounts and progress tracking across sessions.
 - Leaderboards and social features.
 - Adaptive learning algorithm to personalize word difficulty.
 
-## 12. Error Handling and Logging
+## 13. Error Handling and Logging
 
 - Comprehensive error messages for user feedback.
 - Error logging for debugging and improvement.
 - Graceful degradation in case of data loading failures.
 
-## 13. Security Considerations
+## 14. Security Considerations
 
 - Secure handling of user data (for future user account feature).
 - Protection against common web vulnerabilities (XSS, CSRF).
 - Regular security audits and updates.
 
 This Functional Specification Document provides a comprehensive overview of the refactored Tinware application, including its functionality, structure, and future plans. It serves as a guide for development, maintenance, and future enhancements of the application.
+
+
+
+
+
+
+
+
+
+### 11.1 Sound Types
+
+Tinware includes five types of sounds to provide audio feedback for various game events:
+
+1. Valid Word Sound: Played when a user enters a valid word.
+2. Invalid Word Sound: Played when a user enters an invalid word.
+3. Scenario Success Sound: Played when a user successfully completes a scenario by identifying all valid words without any invalid submissions.
+4. Scenario Complete Sound: Played when a user completes a scenario (by pressing "No More Words") but hasn't met the criteria for scenario success.
+5. Hint Requested Sound: Played when a user requests a hint.
+
+### 11.2 Sound Management
+
+- Sounds are managed using the `useSounds` custom hook, which utilizes the `use-sound` library.
+- The `AppSettingsContext` includes a sound toggle feature, allowing users to turn game sounds on or off.
+- Sound preferences are persisted in local storage to remember user settings between sessions.
+
+### 11.3 Sound Playback Logic
+
+- In both AddOne and BingoStem game modes, appropriate sounds are played when processing user input for valid or invalid words.
+- The scenario success sound is played when all valid words in a scenario have been identified without any invalid submissions.
+- The scenario complete sound is played when a user finishes a scenario but hasn't met the criteria for full success.
+- The hint requested sound is played when a user clicks the "Show Hint" button.
+- Only one sound plays at a time; any currently playing sound is stopped before a new one starts.
+
+### 11.4 Implementation Details
+
+- Sound files are stored in the `assets` folder and imported into the `useSounds` hook.
+- The `playSound` function in the `useSounds` hook handles all sound playback, checking if sound is enabled in the app settings before playing.
+- Game logic in `useCommonGameLogic`, `useAddOneLogic`, and `useBingoStemLogic` hooks determines when to trigger sound playback based on game events.
