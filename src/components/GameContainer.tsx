@@ -20,8 +20,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
   onRetry,
   onShowHint
 }) => {
-  const { gameState, setGameState, selectedTopic } = useGameContext();
-
+  const { gameState } = useGameContext();
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -33,9 +32,15 @@ const GameContainer: React.FC<GameContainerProps> = ({
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === 'Space' || event.key === ' ') {
-        if (document.activeElement === inputRef.current) {
-          event.preventDefault();
+        event.preventDefault(); // Always prevent default for space
+        if (gameState.showAllAnswers) {
+          onNextWord();
+        } else if (document.activeElement === inputRef.current) {
+          onNoMoreWords();
         }
+      } else if (event.key === '?' && !gameState.showAllAnswers) {
+        event.preventDefault(); // Prevent '?' from being typed in the input
+        onShowHint();
       }
     };
 
@@ -43,9 +48,9 @@ const GameContainer: React.FC<GameContainerProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [gameState.showAllAnswers, onNoMoreWords, onNextWord, onShowHint]);
 
-  if (!selectedTopic || !gameState.answerSet.length) {
+  if (!gameState.answerSet.length) {
     return <div>Loading...</div>;
   }
 

@@ -25,7 +25,7 @@ Tinware is built using React with TypeScript for the frontend, with data stored 
 - NavBar: Displays the Tinware logo, title, and contains the Settings menu.
 - SelectGame: Allows users to choose a topic and start the game.
 - PlayGame: Orchestrates the gameplay and manages game-specific logic.
-- GameContainer: The main game interface that composes all game components.
+- GameContainer: The main game interface that composes all game components. It also handles keyboard events for game control, including spacebar functionality and the '?' key for hint activation.
 
 ### 3.2 Game-Specific Components
 
@@ -172,24 +172,35 @@ The game controls are presented in the following order, with visibility dependen
 ### 5.6 Hint Functionality
 
 - The "Show Hint" button is available before "No More Words" is pressed.
+- Hints can also be activated by pressing the '?' key when the "Show Hint" button is active.
+- The hint system alternates between two types of hints:
+  1. Count hint: Displays the number of identified valid answers and the total count of possible valid words.
+  2. Definition hint: Shows the definition of a random unidentified word.
 - When the hint is displayed:
   - The hint text appears in the message area.
-  - The focus automatically returns to the input area.
-  - The "Show Hint" button is disabled to prevent multiple hint requests.
-- The hint message now includes the count of identified valid answers and the total count of possible valid words.
+  - The focus automatically returns to the input area after a short delay.
+  - The "Show Hint" button remains active, allowing for consecutive hint requests.
 - If there are no valid words for the current scenario, the hint displays "There are no possible valid words".
+- The type of hint (count or definition) is stored in the game state as `lastHintType` to determine which type to show next.
 
-### 5.7 Retry Functionality
+### 5.7 Keyboard Controls
+
+- Spacebar: 
+  - When the input field is focused and not all answers are shown: Activates the "No More Words" function.
+  - When all answers are shown: Activates the "Next Word" function.
+- '?' key: Activates the "Show Hint" function when it's available (before "No More Words" is pressed).
+
+### 5.8 Retry Functionality
 
 - The "Retry" button is available after "No More Words" is pressed.
 - When Retry is activated, the same scenario is restarted.
 
-### 5.8 Next Word Functionality
+### 5.9 Next Word Functionality
 
 - The "Next Word" button is available after "No More Words" is pressed.
 - When Next Word is activated, a new scenario in current topic is restarted.
 
-### 5.9 Focus Management
+### 5.10 Focus Management
 
 - The input area receives focus:
   - At the start of a new game scenario.
@@ -203,6 +214,7 @@ The game controls are presented in the following order, with visibility dependen
 
 - Provides centralized state management for the entire game.
 - Includes game state, current scenario, and selected topic.
+- `lastHintType`: Keeps track of the last hint type shown ('count' | 'definition' | null).
 - Accessible through the useGameContext hook.
 
 ### 6.2 Game Logic Hooks
@@ -299,41 +311,3 @@ Tinware includes five types of sounds to provide audio feedback for various game
 - Regular security audits and updates.
 
 This Functional Specification Document provides a comprehensive overview of the refactored Tinware application, including its functionality, structure, and future plans. It serves as a guide for development, maintenance, and future enhancements of the application.
-
-
-
-
-
-
-
-
-
-### 11.1 Sound Types
-
-Tinware includes five types of sounds to provide audio feedback for various game events:
-
-1. Valid Word Sound: Played when a user enters a valid word.
-2. Invalid Word Sound: Played when a user enters an invalid word.
-3. Scenario Success Sound: Played when a user successfully completes a scenario by identifying all valid words without any invalid submissions.
-4. Scenario Complete Sound: Played when a user completes a scenario (by pressing "No More Words") but hasn't met the criteria for scenario success.
-5. Hint Requested Sound: Played when a user requests a hint.
-
-### 11.2 Sound Management
-
-- Sounds are managed using the `useSounds` custom hook, which utilizes the `use-sound` library.
-- The `AppSettingsContext` includes a sound toggle feature, allowing users to turn game sounds on or off.
-- Sound preferences are persisted in local storage to remember user settings between sessions.
-
-### 11.3 Sound Playback Logic
-
-- In both AddOne and BingoStem game modes, appropriate sounds are played when processing user input for valid or invalid words.
-- The scenario success sound is played when all valid words in a scenario have been identified without any invalid submissions.
-- The scenario complete sound is played when a user finishes a scenario but hasn't met the criteria for full success.
-- The hint requested sound is played when a user clicks the "Show Hint" button.
-- Only one sound plays at a time; any currently playing sound is stopped before a new one starts.
-
-### 11.4 Implementation Details
-
-- Sound files are stored in the `assets` folder and imported into the `useSounds` hook.
-- The `playSound` function in the `useSounds` hook handles all sound playback, checking if sound is enabled in the app settings before playing.
-- Game logic in `useCommonGameLogic`, `useAddOneLogic`, and `useBingoStemLogic` hooks determines when to trigger sound playback based on game events.

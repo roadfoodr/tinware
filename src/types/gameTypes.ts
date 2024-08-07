@@ -45,6 +45,7 @@ export interface GameState {
   showRetry: boolean;
   gameType: GameType;
   invalidSubmissionCount: number;
+  lastHintType: 'count' | 'definition' | null;
 }
 
 export interface Scenario {

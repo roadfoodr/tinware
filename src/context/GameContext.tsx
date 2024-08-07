@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { GameState, GameType, FormattedAnswer } from '../types/gameTypes';
-import { CONFIG } from '../config/config';
 
 interface GameContextType {
   gameState: GameState;
@@ -40,7 +39,8 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     shouldFocusInput: false,
     showRetry: false,
     gameType: 'AddOne',
-    invalidSubmissionCount: 0,  // Add this line
+    invalidSubmissionCount: 0,
+    lastHintType: null,
   });
 
   const [currentScenario, setCurrentScenario] = useState<FormattedAnswer[] | null>(null);

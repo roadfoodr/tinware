@@ -50,6 +50,8 @@ The primary purpose of Tinware is to:
 - Prominent display of the current challenge and word stem or rack
 - Game-type specific input areas adapted for each mode
 - Consistent design language across all game types
+- Clear visual feedback for hint activation and display
+- Keyboard shortcut reminders for enhanced usability
 
 ### 4.5 Feedback System
 - Real-time feedback on user inputs
@@ -59,10 +61,14 @@ The primary purpose of Tinware is to:
 
 ### 4.6 Hint System
 - Optional hints to assist players when stuck
-- "Show Hint" button is disabled when a hint is already displayed
-- Default hint shows the number of possible answers
+- Two types of hints that alternate:
+  1. Count hint: Shows the number of identified words and total possible valid words
+  2. Definition hint: Displays the definition of a random unidentified word
+- "Show Hint" button remains active after displaying a hint, allowing for consecutive hint requests
+- Hint can be activated via the "Show Hint" button or by pressing the '?' key
 - Game-type specific hints where appropriate
 - Focus returns to input area after displaying hint
+- If no valid words are possible, the hint informs the user
 
 ### 4.7 Progress Tracking
 - Display of correct answers and remaining possibilities
@@ -84,6 +90,9 @@ The primary purpose of Tinware is to:
 - Dynamic visibility of buttons based on game state
 - "Skip Word" button available before revealing all answers
 - "Retry" button appears after all answers are revealed
+- Keyboard controls for essential game actions:
+  - Spacebar: Activates "No More Words" (before revealing answers) or "Next Word" (after revealing answers)
+  - '?' key: Activates "Show Hint" when available
 
 ### 4.11 Sound System
 - Provides audio feedback for key game events to enhance user engagement
@@ -106,6 +115,7 @@ The primary purpose of Tinware is to:
 
 ### 5.2 State Management
 - Utilizes React Context API for centralized state management
+- Manages game state including last hint type for alternating hint functionality
 
 ### 5.3 Data Storage
 - IndexedDB for client-side data storage using Dexie.js
@@ -129,6 +139,8 @@ The primary purpose of Tinware is to:
 - Leaderboards and social features
 - Customizable difficulty levels
 - Adaptive learning algorithm to personalize word difficulty
+- Enhanced hint system with more varied hint types and difficulty levels
+- User-customizable hint preferences
 
 ## 7. Performance Requirements
 
