@@ -1,5 +1,5 @@
-import { FormattedAnswer, ErrorMessage, HintMessage, GameType, SuccessMessage } from '../types/gameTypes';
-import { CONFIG } from '../config/config';
+import { WordItem } from '../db';
+import { FormattedAnswer, GameType, SuccessMessage } from '../types/gameTypes';
 
 export const isValidLetterCombination = (input: string, root: string, subtopic: string): boolean => {
   const allowedLetters = (root + subtopic).toUpperCase();
@@ -74,7 +74,7 @@ export const calculateSuccessMessage = (
     correctAnswers.some(correctItem => correctItem.answerWord === item.answerWord)
   );
 
-  if (correctAnswers.length === 0) {
+  if (answerSet.every(item => item.answer === '-')) {
     if (gameType === 'AddOne') {
       return {
         text: `There are no letters that can go ${answerSet[0].subtopic} <span class="root">${answerSet[0].root.toUpperCase()}</span>.`,
@@ -86,6 +86,11 @@ export const calculateSuccessMessage = (
         class: 'all-words'
       };
     }
+  } else if (correctAnswers.length === 0) {
+    return {
+      text: `There are no valid words for this scenario.`,
+      class: 'all-words'
+    };
   } else if (identifiedCorrectAnswers.length === correctAnswers.length) {
     return {
       text: `You correctly identified all ${correctAnswers.length} word${correctAnswers.length > 1 ? 's' : ''}!`,
@@ -97,4 +102,40 @@ export const calculateSuccessMessage = (
       class: 'some-words'
     };
   }
+};
+
+export const getRandomScenario = (scenarios: string[], previousScenarioId: string | null): string | null => {
+  if (scenarios.length === 0) return null;
+  if (scenarios.length === 1) return scenarios[0];
+
+  let availableScenarios = previousScenarioId
+    ? scenarios.filter(id => id !== previousScenarioId)
+    : scenarios;
+
+  if (availableScenarios.length === 0) {
+    // If all scenarios have been filtered out (shouldn't happen in normal cases),
+    // fall back to the full list minus the previous scenario
+    availableScenarios = scenarios.filter(id => id !== previousScenarioId);
+  }
+
+  const randomIndex = Math.floor(Math.random() * availableScenarios.length);
+  return availableScenarios[randomIndex];
+};
+
+export const processScenarioData = (scenarioData: any[]): WordItem[] => {
+  return scenarioData.map(item => ({
+    ...item,
+    answerWord: String(item.answerWord || '').toUpperCase(),
+    definition: String(item.definition || ''),
+    canAddS: (() => {
+      if (typeof item.canAddS === 'boolean') {
+        return item.canAddS;
+      }
+      if (typeof item.canAddS === 'string') {
+        return item.canAddS.toUpperCase() === 'TRUE';
+      }
+      // Default to false if canAddS is undefined or of unexpected type
+      return false;
+    })()
+  }));
 };

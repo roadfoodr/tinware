@@ -106,6 +106,19 @@ The primary purpose of Tinware is to:
 - Sound preferences are remembered between sessions
 - Ensures only one sound plays at a time to avoid audio overlap
 
+### 4.12 Scenario Selection and Progression
+
+- The game ensures variability in scenario selection by avoiding immediate repetition of scenarios.
+- When progressing to a new scenario (via "Skip Word" or "Next Word"), the system selects a different scenario from the current topic.
+- If only one scenario is available for a topic, the system will reuse it but inform the user.
+- The scenario selection process is designed to provide a balanced and engaging progression through the available content.
+
+### 4.13 Data Management and Processing
+
+- Raw scenario data is processed and standardized before use in the game.
+- The system handles various data formats and ensures consistency in data types (e.g., converting string representations to appropriate boolean values).
+- Data processing includes proper capitalization of words and standardization of optional fields.
+
 ## 5. Technical Requirements
 
 ### 5.1 Frontend
@@ -115,7 +128,8 @@ The primary purpose of Tinware is to:
 
 ### 5.2 State Management
 - Utilizes React Context API for centralized state management
-- Manages game state including last hint type for alternating hint functionality
+- Implements a useGameManager hook to centralize game logic and state management
+- Manages game state including last hint type for alternating hint functionality and previous scenario for varied scenario selection
 
 ### 5.3 Data Storage
 - IndexedDB for client-side data storage using Dexie.js
@@ -127,6 +141,7 @@ The primary purpose of Tinware is to:
 ### 5.5 Extensibility
 - Modular architecture allowing easy addition of new game types
 - Centralized configuration for game parameters
+- Clear separation of concerns between game utilities, answer processing, and core game logic
 
 ### 5.6 Audio
 - Implements the use-sound library for managing and playing game sounds
@@ -139,6 +154,7 @@ The primary purpose of Tinware is to:
 - Leaderboards and social features
 - Customizable difficulty levels
 - Adaptive learning algorithm to personalize word difficulty
+- Enhanced scenario selection algorithm to ensure a balanced distribution of different game types and difficulty levels across play sessions
 - Enhanced hint system with more varied hint types and difficulty levels
 - User-customizable hint preferences
 
@@ -146,8 +162,16 @@ The primary purpose of Tinware is to:
 
 - Initial load time under 3 seconds on average broadband connection
 - Smooth transitions between words and game types (< 300ms)
+- Efficient scenario selection and data processing to maintain quick transitions between words and scenarios (< 300ms)
 - Efficient data caching to minimize network requests
 - Optimized rendering to maintain 60 FPS during gameplay
+
+## 8. User Experience Requirements
+
+- Provide seamless transitions between scenarios, maintaining user engagement
+- Ensure variety in gameplay by avoiding repetition of scenarios within a session
+- Clearly communicate to users when all scenarios for a topic have been completed
+- Offer intuitive navigation between different game types and difficulty levels
 
 ## 9. Security Requirements
 

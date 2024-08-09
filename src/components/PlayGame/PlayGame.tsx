@@ -5,7 +5,7 @@ import GameContainer from '../GameContainer';
 import { formatAnswer } from '../../utils/answerProcessor';
 import { useCommonGameLogic } from '../../hooks/useCommonGameLogic';
 
-const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selectedTopic, onGameTypeChange }) => {
+const PlayGame: React.FC<PlayGameProps> = ({ data, gametype, onSkipWord, selectedTopic }) => {
   const { setGameState, setCurrentScenario, setSelectedTopic } = useGameContext();
   const {
     handleNoMoreWords,

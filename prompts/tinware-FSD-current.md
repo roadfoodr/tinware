@@ -42,6 +42,7 @@ Tinware is built using React with TypeScript for the frontend, with data stored 
 
 ### 3.4 Custom Hooks
 
+- useGameManager: Centralizes game management logic, including scenario selection and game type management.
 - useGameContext: Provides access to the centralized game state.
 - useCommonGameLogic: Handles shared game logic across different game types.
 - useAddOneLogic: Implements AddOne game-specific logic.
@@ -55,6 +56,8 @@ Tinware is built using React with TypeScript for the frontend, with data stored 
   - isValidLetterCombination: Validates letter combinations for BingoStem game.
   - processRemainingAnswers: Processes remaining answers after a game round.
   - calculateSuccessMessage: Generates success messages based on game results.
+  - getRandomScenario: Selects a random scenario, ensuring it's different from the previous one.
+  - processScenarioData: Prepares and standardizes raw scenario data for use in the game.
 
 - answerProcessor.ts: Contains functions specific to processing answers:
   - formatAnswer: Formats a word item into a displayable answer.
@@ -65,18 +68,18 @@ Tinware is built using React with TypeScript for the frontend, with data stored 
 ### 4.1 Word Item Structure
 ```typescript
 interface WordItem {
-  id?: number;
+  id: number;
   taskID: string;
+  scenarioID: string;
   topic: string;
-  gametype: GameTypeName;
+  gametype: string;
   subtopic: string;
   root: string;
   answer: string;
   answerWord: string;
   hint: string;
   definition: string;
-  canAddS: string;
-  scenarioID: string;
+  canAddS: boolean;
 }
 ```
 
@@ -198,7 +201,7 @@ The game controls are presented in the following order, with visibility dependen
 ### 5.9 Next Word Functionality
 
 - The "Next Word" button is available after "No More Words" is pressed.
-- When Next Word is activated, a new scenario in current topic is restarted.
+- When Next Word is activated, a new scenario in the current topic is selected, ensuring it's different from the previous scenario.
 
 ### 5.10 Focus Management
 
@@ -213,15 +216,16 @@ The game controls are presented in the following order, with visibility dependen
 ### 6.1 GameContext
 
 - Provides centralized state management for the entire game.
-- Includes game state, current scenario, and selected topic.
+- Includes game state, current scenario, selected topic, and previous scenario ID.
 - `lastHintType`: Keeps track of the last hint type shown ('count' | 'definition' | null).
 - Accessible through the useGameContext hook.
 
 ### 6.2 Game Logic Hooks
 
-- useCommonGameLogic: Handles shared game logic (e.g., showing hints, transitioning between words). Imports processRemainingAnswers and calculateSuccessMessage from GameUtils.ts.
+- useCommonGameLogic: Handles shared game logic (e.g., showing hints, transitioning between words).
 - useAddOneLogic and useBingoStemLogic: Implement game-specific logic.
 - useGameInput: Manages input handling for both game types.
+- useGameManager: New hook that centralizes game management, including scenario selection and game type management.
 
 ## 7. Data Management
 
@@ -291,20 +295,35 @@ Tinware includes five types of sounds to provide audio feedback for various game
 - The `playSound` function in the `useSounds` hook handles all sound playback, checking if sound is enabled in the app settings before playing.
 - Game logic in `useCommonGameLogic`, `useAddOneLogic`, and `useBingoStemLogic` hooks determines when to trigger sound playback based on game events.
 
-## 12. Future Enhancements
+## 12. Scenario Selection
+
+The scenario selection process ensures a varied gaming experience:
+
+- The `getRandomScenario` function in `GameUtils.ts` selects a random scenario while avoiding the immediately previous scenario.
+- The `useGameManager` hook keeps track of the previous scenario ID to facilitate this selection process.
+- When a new topic is selected, the previous scenario ID is reset, allowing any scenario to be selected for the new topic.
+- The `handleSkipWord` function in `useGameManager` ensures that skipping a word or moving to the next word after completion always results in a different scenario being selected (if multiple scenarios are available).
+
+## 13. Data Processing
+
+- The `processScenarioData` function in `GameUtils.ts` prepares and standardizes raw scenario data before use in the game:
+  - Ensures `answerWord` is uppercase and `definition` is a string.
+  - Converts `canAddS` to a boolean value for consistent handling throughout the game.
+
+## 13. Future Enhancements
 
 - Implementation of additional game types (e.g., Flashcard, Unscramble).
 - User accounts and progress tracking across sessions.
 - Leaderboards and social features.
 - Adaptive learning algorithm to personalize word difficulty.
 
-## 13. Error Handling and Logging
+## 14. Error Handling and Logging
 
 - Comprehensive error messages for user feedback.
 - Error logging for debugging and improvement.
 - Graceful degradation in case of data loading failures.
 
-## 14. Security Considerations
+## 15. Security Considerations
 
 - Secure handling of user data (for future user account feature).
 - Protection against common web vulnerabilities (XSS, CSRF).

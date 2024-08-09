@@ -3,7 +3,7 @@
 import Dexie, { Table } from 'dexie';
 
 export interface WordItem {
-  id?: number;
+  id: number;
   taskID: string;
   scenarioID: string;
   topic: string;
@@ -14,7 +14,7 @@ export interface WordItem {
   answerWord: string;
   hint: string;
   definition: string;
-  canAddS: string;
+  canAddS: boolean;
 }
 
 export class TinwareDatabase extends Dexie {

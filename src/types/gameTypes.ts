@@ -14,7 +14,6 @@ export interface PlayGameProps {
   gametype: GameType;
   onSkipWord: () => void;
   selectedTopic: string;
-  onGameTypeChange: (newGameType: GameType) => void;
 }
 
 export interface SuccessMessage {

@@ -1,22 +1,26 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import NavBar from './components/NavBar';
 import { DataInitializer } from './services/DataInitializer';
 import SelectGame from './components/SelectGame';
 import PlayGame from './components/PlayGame/PlayGame';
-import { WordItem } from './db';
-import { fetchTopics, selectTopic, restartGame, clearAppCache, getRandomScenario } from './utils/appHelpers';
-import { GameType } from './types/gameTypes';
+import { fetchTopics, restartGame, clearAppCache } from './utils/appHelpers';
 import { GameProvider } from './context/GameContext';
 import { AppSettingsProvider } from './context/AppSettingsContext';
+import { useGameManager } from './hooks/useGameManager';
 
 const App: React.FC = () => {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [topics, setTopics] = useState<string[]>([]);
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
-  const [gameData, setGameData] = useState<WordItem[]>([]);
-  const [currentGameType, setCurrentGameType] = useState<GameType>('AddOne');
-  const [allTopicData, setAllTopicData] = useState<WordItem[]>([]);
-  const [scenarios, setScenarios] = useState<string[]>([]);
+
+  const {
+    allTopicData,
+    scenarios,
+    currentGameType,
+    gameData,
+    handleSelectTopic,
+    handleSkipWord
+  } = useGameManager();
 
   useEffect(() => {
     if (dataLoaded) {
@@ -24,45 +28,9 @@ const App: React.FC = () => {
     }
   }, [dataLoaded]);
 
-  const selectNewScenario = useCallback((scenarioList: string[], topicData: WordItem[]) => {
-    console.log('Selecting new scenario. Available scenarios:', scenarioList);
-    const randomScenarioId = getRandomScenario(scenarioList);
-    console.log('Selected scenario ID:', randomScenarioId);
-    if (randomScenarioId) {
-      const scenarioData = topicData.filter(item => item.scenarioID === randomScenarioId);
-      console.log('Filtered scenario data:', scenarioData);
-      setGameData(scenarioData);
-      setCurrentGameType(scenarioData[0]?.gametype as GameType || 'AddOne');
-    } else {
-      console.log('No scenario selected. Clearing game data.');
-      setGameData([]);
-      setCurrentGameType('AddOne');
-    }
-  }, []);
-
-  const handleSelectTopic = async (topic: string) => {
-    console.log('Selected topic:', topic);
-    setSelectedTopic(topic);
-    const { filteredData, scenarios: newScenarios } = await selectTopic(topic);
-    console.log('Filtered data:', filteredData);
-    console.log('New scenarios:', newScenarios);
-    setAllTopicData(filteredData);
-    setScenarios(newScenarios);
-    selectNewScenario(newScenarios, filteredData);
-  };
-
-  const handleSkipWord = useCallback(() => {
-    console.log('Skipping word');
-    selectNewScenario(scenarios, allTopicData);
-  }, [scenarios, allTopicData, selectNewScenario]);
-
   const handleRestart = () => {
     const { selectedTopic, gameData } = restartGame();
     setSelectedTopic(selectedTopic);
-    setGameData(gameData);
-    setCurrentGameType('AddOne');
-    setAllTopicData([]);
-    setScenarios([]);
   };
 
   const handleClearCache = async () => {
@@ -70,10 +38,6 @@ const App: React.FC = () => {
     setDataLoaded(dataLoaded);
     setTopics(topics);
     setSelectedTopic(selectedTopic);
-    setGameData(gameData);
-    setCurrentGameType('AddOne');
-    setAllTopicData([]);
-    setScenarios([]);
   };
 
   return (
@@ -86,7 +50,10 @@ const App: React.FC = () => {
           <div className="pure-u-1">
             <DataInitializer onDataLoaded={() => setDataLoaded(true)} />
             {dataLoaded && !selectedTopic && (
-              <SelectGame topics={topics} onSelectTopic={handleSelectTopic} />
+              <SelectGame topics={topics} onSelectTopic={(topic) => {
+                setSelectedTopic(topic);
+                handleSelectTopic(topic);
+              }} />
             )}
             {dataLoaded && selectedTopic && gameData.length > 0 && (
               <PlayGame
@@ -94,7 +61,6 @@ const App: React.FC = () => {
                 gametype={currentGameType}
                 onSkipWord={handleSkipWord}
                 selectedTopic={selectedTopic}
-                onGameTypeChange={setCurrentGameType}
               />
             )}
             {dataLoaded && selectedTopic && gameData.length === 0 && (

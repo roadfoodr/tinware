@@ -19,7 +19,7 @@ const DisplayArea: React.FC = () => {
                          item.isRootWithNoLetters ? 'valid' :
                          showAllAnswers && item.isRemaining ? 'missed' : 'valid';
         
-        const canAddSClass = item.takesS.startsWith('can add S:') ? `can-add-s-${rowClass}` : 'can-add-s-default';
+const canAddSClass = item.canAddS ? `can-add-s-${rowClass}` : 'can-add-s-default';
         
         const isValidOrMissed = rowClass === 'valid' || rowClass === 'missed';
         

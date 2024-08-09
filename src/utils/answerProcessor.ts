@@ -1,17 +1,13 @@
 import { WordItem } from '../db';
-import { FormattedAnswer, ErrorMessage, HintMessage, GameType, SuccessMessage } from '../types/gameTypes';
+import { FormattedAnswer, ErrorMessage, HintMessage, GameType } from '../types/gameTypes';
 import { CONFIG } from '../config/config';
-import { isValidLetterCombination, processRemainingAnswers, calculateSuccessMessage } from '../utils/GameUtils';
+import { isValidLetterCombination } from './GameUtils';
 
 export const formatAnswer = (item: WordItem): FormattedAnswer => {
   let takesS = '';
 
   if (item.definition && item.definition !== 'Not a valid word in this lexicon' && item.canAddS !== undefined) {
-    const canAddS = typeof item.canAddS === 'string' 
-      ? item.canAddS.toUpperCase() === 'TRUE'
-      : Boolean(item.canAddS);
-
-    if (canAddS) {
+    if (item.canAddS) {
       takesS = `can add S: ${item.answerWord.toUpperCase()}S`;
     } else {
       if (item.answerWord.toUpperCase().endsWith('S')) {

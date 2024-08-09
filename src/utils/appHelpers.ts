@@ -50,9 +50,3 @@ export const clearAppCache = async () => {
     gameData: [],
   };
 };
-
-export const getRandomScenario = (scenarios: string[]): string | null => {
-  if (scenarios.length === 0) return null;
-  const randomIndex = Math.floor(Math.random() * scenarios.length);
-  return scenarios[randomIndex];
-};

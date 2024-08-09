@@ -35,6 +35,7 @@ tinware/
 │   │   ├── useBingoStemLogic.ts
 │   │   ├── useCommonGameLogic.ts
 │   │   ├── useGameInput.ts
+│   │   ├── useGameManager.ts
 │   │   └── useSounds.ts
 │   ├── services/
 │   │   └── DataInitializer.tsx
@@ -43,7 +44,7 @@ tinware/
 │   ├── utils/
 │   │   ├── answerProcessor.ts
 │   │   ├── appHelpers.ts
-│   │   └── gameUtils.ts
+│   │   └── GameUtils.ts
 │   ├── App.tsx
 │   ├── db.ts
 │   ├── index.css
