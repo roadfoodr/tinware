@@ -57,7 +57,8 @@ The primary purpose of Tinware is to:
 - Real-time feedback on user inputs
 - Comprehensive end-of-round summary
 - Invalid word messages include the name of the current lexicon
-- Success messages tailored to each game type
+- Success messages tailored to each game type and scenario outcome
+- Display of calculated score at the end of each scenario
 
 ### 4.6 Hint System
 - Optional hints to assist players when stuck
@@ -69,11 +70,13 @@ The primary purpose of Tinware is to:
 - Game-type specific hints where appropriate
 - Focus returns to input area after displaying hint
 - If no valid words are possible, the hint informs the user
+- Each hint request is tracked and factors into the score calculation
 
 ### 4.7 Progress Tracking
 - Display of correct answers and remaining possibilities
 - Color-coded answers for easy identification (green for valid, gray for invalid, red for missed)
-- Cumulative scoring system across game types (future enhancement)
+- Score calculation and display at the end of each scenario
+- Cumulative scoring system across game types and scenarios (future enhancement)
 
 ### 4.8 Dictionary Integration
 - Valid and missed answer words are hyperlinked to an online Scrabble dictionary
@@ -119,46 +122,62 @@ The primary purpose of Tinware is to:
 - The system handles various data formats and ensures consistency in data types (e.g., converting string representations to appropriate boolean values).
 - Data processing includes proper capitalization of words and standardization of optional fields.
 
-## 5. Technical Requirements
+## 5. Scoring System Requirements
 
-### 5.1 Frontend
+### 5.1 Score Calculation
+- Calculate score using the formula: (effectiveValidWords * 100) / (effectiveValidWords + wordsMissed + invalidWordsGuessed + 0.5 * hintsRequested)
+- Handle scenarios with no valid words by treating them as if one valid word was identified
+- Ensure consistent scoring across all scenario types (AddOne and BingoStem)
+
+### 5.2 Score Display
+- Include the calculated score in the success message at the end of each scenario
+- Display the score as an integer between 0 and 100
+
+### 5.3 Perfect Score
+- Award a score of 100 for perfect performance (all valid words identified or correctly identifying no valid words, with no invalid guesses or hints used)
+- Play a special success sound for perfect scores
+
+
+## 6. Technical Requirements
+
+### 6.1 Frontend
 - Developed using React with TypeScript
 - Responsive design using PureCSS for styling
 - FontAwesome for icons
 
-### 5.2 State Management
+### 6.2 State Management
 - Utilizes React Context API for centralized state management
 - Implements a useGameManager hook to centralize game logic and state management
-- Manages game state including last hint type for alternating hint functionality and previous scenario for varied scenario selection
+- Manages game state including hint count, score, last hint type for alternating hint functionality, and previous scenario for varied scenario selection
 
-### 5.3 Data Storage
+### 6.3 Data Storage
 - IndexedDB for client-side data storage using Dexie.js
 - Initial data loaded from CSV file hosted on S3
 
-### 5.4 Build and Development
+### 6.4 Build and Development
 - Vite as the build tool for fast development and optimized production builds
 
-### 5.5 Extensibility
+### 6.5 Extensibility
 - Modular architecture allowing easy addition of new game types
 - Centralized configuration for game parameters
 - Clear separation of concerns between game utilities, answer processing, and core game logic
 
-### 5.6 Audio
+### 6.6 Audio
 - Implements the use-sound library for managing and playing game sounds
 - Supports multiple audio file formats for cross-browser compatibility
 
-## 6. Future Enhancements
+## 7. Future Enhancements
 
 - Implementation of Flashcard and Unscramble game types
 - User accounts and progress tracking across sessions
-- Leaderboards and social features
+- Implement a global leaderboard or personal best tracking system based on the scoring feature
 - Customizable difficulty levels
 - Adaptive learning algorithm to personalize word difficulty
 - Enhanced scenario selection algorithm to ensure a balanced distribution of different game types and difficulty levels across play sessions
 - Enhanced hint system with more varied hint types and difficulty levels
 - User-customizable hint preferences
 
-## 7. Performance Requirements
+## 8. Performance Requirements
 
 - Initial load time under 3 seconds on average broadband connection
 - Smooth transitions between words and game types (< 300ms)
@@ -166,14 +185,15 @@ The primary purpose of Tinware is to:
 - Efficient data caching to minimize network requests
 - Optimized rendering to maintain 60 FPS during gameplay
 
-## 8. User Experience Requirements
+## 9. User Experience Requirements
 
 - Provide seamless transitions between scenarios, maintaining user engagement
 - Ensure variety in gameplay by avoiding repetition of scenarios within a session
 - Clearly communicate to users when all scenarios for a topic have been completed
 - Offer intuitive navigation between different game types and difficulty levels
+- Provide clear and encouraging feedback on user performance through the scoring system and tailored success messages
 
-## 9. Security Requirements
+## 10. Security Requirements
 
 - Secure handling of user data (for future user account feature)
 - Protection against common web vulnerabilities (XSS, CSRF)

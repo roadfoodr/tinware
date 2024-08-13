@@ -55,53 +55,60 @@ export const processRemainingAnswers = (
   })).reverse();
 };
 
+export const calculateScore = (
+  validWordsIdentified: number,
+  wordsMissed: number,
+  invalidWordsGuessed: number,
+  hintsRequested: number
+): number => {
+  // If there are no valid words, treat it as if there was one valid word identified
+  const effectiveValidWords = validWordsIdentified + wordsMissed === 0 ? 1 : validWordsIdentified;
+  
+  const denominator = effectiveValidWords + wordsMissed + invalidWordsGuessed + 0.5 * hintsRequested;
+  
+  // Use effectiveValidWords in the numerator as well
+  return Math.round((effectiveValidWords * 100) / denominator);
+};
+
 export const calculateSuccessMessage = (
   answerSet: FormattedAnswer[],
   displayedAnswers: FormattedAnswer[],
-  gameType: GameType
+  gameType: GameType,
+  score: number
 ): SuccessMessage => {
-  const correctAnswers = answerSet.filter(item => 
-    item.answer !== '-' && 
-    item.definition && 
-    item.definition !== 'Not a valid word in this lexicon'
-  );
+  // Filter out placeholder answers ('-') to get actual valid answers
+  const validAnswers = answerSet.filter(item => item.answerWord !== '-');
+  
+  const validAnswersInSet = new Set(validAnswers.map(item => item.answerWord));
   
   const identifiedCorrectAnswers = displayedAnswers.filter(item => 
-    item.definition && 
-    item.definition !== 'Not a valid word in this lexicon' && 
-    item.answer !== '-' &&
-    !item.isRemaining &&
-    correctAnswers.some(correctItem => correctItem.answerWord === item.answerWord)
+    !item.isRemaining && validAnswersInSet.has(item.answerWord)
   );
 
-  if (answerSet.every(item => item.answer === '-')) {
+  let messageText = '';
+  let messageClass: 'all-words' | 'some-words' = 'some-words';
+  console.log(validAnswers)
+  if (validAnswers.length === 0) {
     if (gameType === 'AddOne') {
-      return {
-        text: `There are no letters that can go ${answerSet[0].subtopic} <span class="root">${answerSet[0].root.toUpperCase()}</span>.`,
-        class: 'all-words'
-      };
+      messageText = `There are no letters that can go ${answerSet[0].subtopic} <span class="root">${answerSet[0].root.toUpperCase()}</span>.`;
     } else if (gameType === 'BingoStem') {
-      return {
-        text: `There are no bingos that can be made from <span class="root">${answerSet[0].root.toUpperCase()}</span> + <span class="root">${answerSet[0].subtopic.toUpperCase()}</span>.`,
-        class: 'all-words'
-      };
+      messageText = `There are no bingos that can be made from <span class="root">${answerSet[0].root.toUpperCase()}</span> + <span class="root">${answerSet[0].subtopic.toUpperCase()}</span>.`;
     }
-  } else if (correctAnswers.length === 0) {
-    return {
-      text: `There are no valid words for this scenario.`,
-      class: 'all-words'
-    };
-  } else if (identifiedCorrectAnswers.length === correctAnswers.length) {
-    return {
-      text: `You correctly identified all ${correctAnswers.length} word${correctAnswers.length > 1 ? 's' : ''}!`,
-      class: 'all-words'
-    };
+    messageClass = 'all-words';
+  } else if (identifiedCorrectAnswers.length === validAnswers.length) {
+    messageText = `You correctly identified all ${validAnswers.length} word${validAnswers.length > 1 ? 's' : ''}` +
+                  `${score == 100 ? '!' : ''}`;
+    messageClass = 'all-words';
   } else {
-    return {
-      text: `You identified ${identifiedCorrectAnswers.length} out of ${correctAnswers.length} word${correctAnswers.length > 1 ? 's' : ''}`,
-      class: 'some-words'
-    };
+    messageText = `You identified ${identifiedCorrectAnswers.length} out of ${validAnswers.length} word${validAnswers.length > 1 ? 's' : ''}`;
   }
+
+  messageText += `<br><span class="score">(Score: ${score})</span>`;
+
+  return {
+    text: messageText,
+    class: messageClass
+  };
 };
 
 export const getRandomScenario = (scenarios: string[], previousScenarioId: string | null): string | null => {

@@ -109,6 +109,10 @@ interface GameState {
   shouldFocusInput: boolean;
   showRetry: boolean;
   gameType: GameType;
+  invalidSubmissionCount: number;
+  lastHintType: 'count' | 'definition' | null;
+  hintCount: number;
+  score: number | null;
 }
 ```
 
@@ -168,9 +172,10 @@ The game controls are presented in the following order, with visibility dependen
 
 ### 5.5 Game Completion
 
-- When the user believes they've found all words, they click "No More Words".
-- The processRemainingAnswers function from GameUtils.ts is used to reveal remaining valid words in the DisplayArea.
-- A success message is generated using the calculateSuccessMessage function from GameUtils.ts.
+1. The `processRemainingAnswers` function from `GameUtils.ts` is used to reveal remaining valid words in the DisplayArea.
+2. The score is calculated using the `calculateScore` function from `GameUtils.ts`.
+3. A success message is generated using the `calculateSuccessMessage` function from `GameUtils.ts`.
+4. The appropriate sound (scenarioSuccess or scenarioComplete) is played based on the score.
 
 ### 5.6 Hint Functionality
 
@@ -185,6 +190,8 @@ The game controls are presented in the following order, with visibility dependen
   - The "Show Hint" button remains active, allowing for consecutive hint requests.
 - If there are no valid words for the current scenario, the hint displays "There are no possible valid words".
 - The type of hint (count or definition) is stored in the game state as `lastHintType` to determine which type to show next.
+- Each time a hint is requested, the `hintCount` in the game state is incremented.
+- The hint count is used in the score calculation to apply a penalty for using hints.
 
 ### 5.7 Keyboard Controls
 
@@ -215,10 +222,34 @@ The game controls are presented in the following order, with visibility dependen
 
 ### 6.1 GameContext
 
-- Provides centralized state management for the entire game.
-- Includes game state, current scenario, selected topic, and previous scenario ID.
-- `lastHintType`: Keeps track of the last hint type shown ('count' | 'definition' | null).
-- Accessible through the useGameContext hook.
+The GameContext provides centralized state management for the entire game. It includes:
+
+- `gameState`: An object containing the current state of the game, including:
+  - `answerSet`: The current set of answers for the scenario.
+  - `userInput`: The current user input.
+  - `displayedAnswers`: The answers that have been displayed to the user.
+  - `showAllAnswers`: A boolean indicating whether all answers should be shown.
+  - `skipButtonLabel`: The label for the skip button.
+  - `errorMessage`: Any error message to display.
+  - `successMessage`: Any success message to display.
+  - `hint`: The current hint, if any.
+  - `showHint`: A boolean indicating whether to show the hint.
+  - `isTransitioning`: A boolean indicating if the game is in a transitioning state.
+  - `shouldFocusInput`: A boolean indicating if the input should be focused.
+  - `showRetry`: A boolean indicating if the retry option should be shown.
+  - `gameType`: The current game type (AddOne or BingoStem).
+  - `invalidSubmissionCount`: The count of invalid submissions.
+  - `lastHintType`: The type of the last hint shown.
+  - `hintCount`: The number of hints requested in the current scenario.
+  - `score`: The calculated score for the current scenario.
+
+- `currentScenario`: The current scenario being played.
+- `setCurrentScenario`: A function to update the current scenario.
+- `setGameState`: A function to update the game state.
+- `selectedTopic`: The currently selected topic.
+- `setSelectedTopic`: A function to update the selected topic.
+
+The GameContext is accessible through the useGameContext hook, which provides access to these state variables and functions throughout the application.
 
 ### 6.2 Game Logic Hooks
 
@@ -304,26 +335,59 @@ The scenario selection process ensures a varied gaming experience:
 - When a new topic is selected, the previous scenario ID is reset, allowing any scenario to be selected for the new topic.
 - The `handleSkipWord` function in `useGameManager` ensures that skipping a word or moving to the next word after completion always results in a different scenario being selected (if multiple scenarios are available).
 
-## 13. Data Processing
+## 13. Scoring System
+
+The application now includes a scoring system to evaluate user performance in each scenario:
+
+### 13.1 Score Calculation
+
+The score is calculated using the following formula:
+
+```
+score = (effectiveValidWords * 100) / (effectiveValidWords + wordsMissed + invalidWordsGuessed + 0.5 * hintsRequested)
+```
+
+Where:
+- `effectiveValidWords` is the number of valid words identified by the user, or 1 if there are no valid words in the scenario.
+- `wordsMissed` is the number of valid words not identified by the user.
+- `invalidWordsGuessed` is the number of invalid words guessed by the user.
+- `hintsRequested` is the number of hints requested by the user.
+
+### 13.2 Handling Scenarios with No Valid Words
+
+- In scenarios with no valid words, the scoring system treats it as if there was one valid word identified.
+- This approach ensures consistency in scoring across all scenarios, including those with no valid words.
+
+### 13.3 Score Display
+
+- The calculated score is included in the success message displayed at the end of each scenario.
+- The score is displayed as an integer between 0 and 100.
+
+### 13.4 Perfect Score
+
+- A score of 100 is achieved when the user identifies all valid words (or correctly identifies that there are no valid words) without making any invalid guesses or requesting any hints.
+- When a perfect score is achieved, the 'scenarioSuccess' sound is played instead of the 'scenarioComplete' sound.
+
+## 14. Data Processing
 
 - The `processScenarioData` function in `GameUtils.ts` prepares and standardizes raw scenario data before use in the game:
   - Ensures `answerWord` is uppercase and `definition` is a string.
   - Converts `canAddS` to a boolean value for consistent handling throughout the game.
 
-## 13. Future Enhancements
+## 15. Future Enhancements
 
 - Implementation of additional game types (e.g., Flashcard, Unscramble).
 - User accounts and progress tracking across sessions.
 - Leaderboards and social features.
 - Adaptive learning algorithm to personalize word difficulty.
 
-## 14. Error Handling and Logging
+## 16. Error Handling and Logging
 
 - Comprehensive error messages for user feedback.
 - Error logging for debugging and improvement.
 - Graceful degradation in case of data loading failures.
 
-## 15. Security Considerations
+## 17. Security Considerations
 
 - Secure handling of user data (for future user account feature).
 - Protection against common web vulnerabilities (XSS, CSRF).

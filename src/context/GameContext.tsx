@@ -41,6 +41,8 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     gameType: 'AddOne',
     invalidSubmissionCount: 0,
     lastHintType: null,
+    hintCount: 0,
+    score: null,
   });
 
   const [currentScenario, setCurrentScenario] = useState<FormattedAnswer[] | null>(null);

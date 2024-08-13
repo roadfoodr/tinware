@@ -18,14 +18,25 @@ graph TD
     M --> J
     N --> O{More Words?}
     O -->|Yes| J
-    O -->|No| P[Show All Answers]
-    P --> Q{Retry?}
-    Q -->|Yes| R[Reset Current Scenario]
-    R --> J
-    Q -->|No| S{Next Word?}
-    S -->|Yes| F
-    S -->|No| T[End Game]
-    T --> U[Display Results]
-    U --> V[Return to Topic Selection]
-    V --> B
-```
+    O -->|No| P[Calculate Score]
+    P --> Q[Show All Answers]
+    Q --> R[Display Success Message with Score]
+    R --> S{Perfect Score?}
+    S -->|Yes| T[Play Success Sound]
+    S -->|No| U[Play Complete Sound]
+    T --> V{Retry?}
+    U --> V
+    V -->|Yes| W[Reset Current Scenario]
+    W --> J
+    V -->|No| X{Next Word?}
+    X -->|Yes| F
+    X -->|No| Y[End Game]
+    Y --> Z[Display Final Results]
+    Z --> AA[Return to Topic Selection]
+    AA --> B
+    J --> BB{Show Hint?}
+    BB -->|Yes| CC[Display Hint]
+    CC --> DD[Increment Hint Count]
+    DD --> J
+    BB -->|No| J
+    ```

@@ -45,6 +45,8 @@ export interface GameState {
   gameType: GameType;
   invalidSubmissionCount: number;
   lastHintType: 'count' | 'definition' | null;
+  hintCount: number;
+  score: number | null;
 }
 
 export interface Scenario {

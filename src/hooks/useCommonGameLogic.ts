@@ -3,7 +3,7 @@ import { useGameContext } from '../context/GameContext';
 import { FormattedAnswer } from '../types/gameTypes';
 import { useSounds } from '../hooks/useSounds';
 import { CONFIG } from '../config/config';
-import { processRemainingAnswers, calculateSuccessMessage } from '../utils/GameUtils';
+import { processRemainingAnswers, calculateSuccessMessage, calculateScore } from '../utils/GameUtils';
 
 export const useCommonGameLogic = (onSkipWord: () => void) => {
   const { gameState, setGameState, currentScenario } = useGameContext();
@@ -11,7 +11,7 @@ export const useCommonGameLogic = (onSkipWord: () => void) => {
 
   useEffect(() => {
     if (currentScenario) {
-      setGameState(prev => ({ ...prev, lastHintType: null }));
+      setGameState(prev => ({ ...prev, lastHintType: null, hintCount: 0, score: null }));
     }
   }, [currentScenario, setGameState]);
 
@@ -60,10 +60,10 @@ export const useCommonGameLogic = (onSkipWord: () => void) => {
       errorMessage: null,
       successMessage: null,
       lastHintType: newHintType,
-      shouldFocusInput: false
+      shouldFocusInput: false,
+      hintCount: prev.hintCount + 1
     }));
 
-    // Set shouldFocusInput to true after a short delay
     setTimeout(() => {
       setGameState(prev => ({ ...prev, shouldFocusInput: true }));
     }, 100);
@@ -73,7 +73,9 @@ export const useCommonGameLogic = (onSkipWord: () => void) => {
     setGameState(prev => ({ 
       ...prev, 
       isTransitioning: true, 
-      shouldFocusInput: false
+      shouldFocusInput: false,
+      hintCount: 0,
+      score: null
     }));
     onSkipWord();
     setTimeout(() => {
@@ -94,12 +96,24 @@ export const useCommonGameLogic = (onSkipWord: () => void) => {
 
       const remainingAnswers = processRemainingAnswers(currentScenario, prev.displayedAnswers);
       const newDisplayedAnswers = [...remainingAnswers, ...prev.displayedAnswers];
-      const successMessage = calculateSuccessMessage(currentScenario, newDisplayedAnswers, prev.gameType);
+      
+      const validAnswers = currentScenario.filter(item => item.answer !== '-');
+      const validAnswersInSet = new Set(validAnswers.map(item => item.answerWord));
 
-      const allValidWordsIdentified = remainingAnswers.length === 0;
-      const noInvalidWordsSubmitted = prev.invalidSubmissionCount === 0;
+      const validWordsIdentified = newDisplayedAnswers.filter(answer => 
+        !answer.isRemaining && validAnswersInSet.has(answer.answerWord)
+      ).length;
+      
+      const wordsMissed = remainingAnswers.length;
+      const invalidWordsGuessed = newDisplayedAnswers.filter(answer => 
+        !validAnswersInSet.has(answer.answerWord) && answer.answer !== '-'
+      ).length;
 
-      if (allValidWordsIdentified && noInvalidWordsSubmitted) {
+      const score = calculateScore(validWordsIdentified, wordsMissed, invalidWordsGuessed, prev.hintCount);
+      
+      const successMessage = calculateSuccessMessage(currentScenario, newDisplayedAnswers, prev.gameType, score);
+
+      if (score === 100) {
         playSound('scenarioSuccess');
       } else {
         playSound('scenarioComplete');
@@ -115,7 +129,8 @@ export const useCommonGameLogic = (onSkipWord: () => void) => {
         showHint: false,
         userInput: '',
         lastHintType: null,
-        shouldFocusInput: true
+        shouldFocusInput: true,
+        score
       };
     });
   }, [currentScenario, setGameState, playSound]);
@@ -138,7 +153,9 @@ export const useCommonGameLogic = (onSkipWord: () => void) => {
       showHint: false,
       showRetry: false,
       invalidSubmissionCount: 0,
-      lastHintType: null
+      lastHintType: null,
+      hintCount: 0,
+      score: null
     }));
     
     setTimeout(() => {
