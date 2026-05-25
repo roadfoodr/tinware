@@ -1,11 +1,11 @@
 import React, { useRef, useEffect } from 'react';
 import { useGameContext } from '../context/GameContext';
-import AddOneGame from './AddOneGame';
-import BingoStemGame from './BingoStemGame';
 import GamePrompt from './PlayGame/GamePrompt';
+import InputArea from './PlayGame/InputArea';
 import ControlButtons from './PlayGame/ControlButtons';
 import MessageArea from './PlayGame/MessageArea';
 import DisplayArea from './PlayGame/DisplayArea';
+import { isGameTypeRegistered } from '../gameTypes';
 
 interface GameContainerProps {
   onNoMoreWords: () => void;
@@ -32,14 +32,14 @@ const GameContainer: React.FC<GameContainerProps> = ({
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === 'Space' || event.key === ' ') {
-        event.preventDefault(); // Always prevent default for space
+        event.preventDefault();
         if (gameState.showAllAnswers) {
           onNextWord();
         } else if (document.activeElement === inputRef.current) {
           onNoMoreWords();
         }
       } else if (event.key === '?' && !gameState.showAllAnswers) {
-        event.preventDefault(); // Prevent '?' from being typed in the input
+        event.preventDefault();
         onShowHint();
       }
     };
@@ -54,11 +54,18 @@ const GameContainer: React.FC<GameContainerProps> = ({
     return <div>Loading...</div>;
   }
 
+  if (!isGameTypeRegistered(gameState.gameType)) {
+    return (
+      <div className="pure-u-1">
+        Unsupported game type: {gameState.gameType}
+      </div>
+    );
+  }
+
   return (
     <div className="pure-u-1">
       <GamePrompt />
-      {gameState.gameType === 'AddOne' && <AddOneGame ref={inputRef} />}
-      {gameState.gameType === 'BingoStem' && <BingoStemGame ref={inputRef} />}
+      <InputArea ref={inputRef} />
       <ControlButtons
         onNoMoreWords={onNoMoreWords}
         onSkip={onNextWord}

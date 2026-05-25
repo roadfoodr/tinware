@@ -1,32 +1,6 @@
 import { WordItem } from '../db';
 import { FormattedAnswer, GameType, SuccessMessage } from '../types/gameTypes';
 
-export const isValidLetterCombination = (input: string, root: string, subtopic: string): boolean => {
-  const allowedLetters = (root + subtopic).toUpperCase();
-  const inputLetters = input.toUpperCase();
-
-  if (inputLetters.length !== allowedLetters.length) return false;
-
-  const allowedLetterCount = new Map<string, number>();
-  const inputLetterCount = new Map<string, number>();
-
-  for (const letter of allowedLetters) {
-    allowedLetterCount.set(letter, (allowedLetterCount.get(letter) || 0) + 1);
-  }
-
-  for (const letter of inputLetters) {
-    inputLetterCount.set(letter, (inputLetterCount.get(letter) || 0) + 1);
-  }
-
-  if (allowedLetterCount.size !== inputLetterCount.size) return false;
-
-  for (const [letter, count] of allowedLetterCount) {
-    if (inputLetterCount.get(letter) !== count) return false;
-  }
-
-  return true;
-};
-
 export const processRemainingAnswers = (
   answerSet: FormattedAnswer[],
   displayedAnswers: FormattedAnswer[]
@@ -129,17 +103,18 @@ export const getRandomScenario = (scenarios: string[], previousScenarioId: strin
   return availableScenarios[randomIndex];
 };
 
-export const processScenarioData = (scenarioData: any[]): WordItem[] => {
+export const processScenarioData = (scenarioData: WordItem[]): WordItem[] => {
   return scenarioData.map(item => ({
     ...item,
     answerWord: String(item.answerWord || '').toUpperCase(),
     definition: String(item.definition || ''),
     canAddS: (() => {
-      if (typeof item.canAddS === 'boolean') {
-        return item.canAddS;
+      const rawCanAddS = item.canAddS as boolean | string | undefined;
+      if (typeof rawCanAddS === 'boolean') {
+        return rawCanAddS;
       }
-      if (typeof item.canAddS === 'string') {
-        return item.canAddS.toUpperCase() === 'TRUE';
+      if (typeof rawCanAddS === 'string') {
+        return rawCanAddS.toUpperCase() === 'TRUE';
       }
       // Default to false if canAddS is undefined or of unexpected type
       return false;

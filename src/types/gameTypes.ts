@@ -1,6 +1,11 @@
 import { WordItem } from '../db';
 
-export type GameType = 'AddOne' | 'BingoStem';
+/**
+ * Game type identifier. Matches the `key` field of a registered GameTypeDefinition.
+ * Using string (not a closed union) so new game types can be added without
+ * modifying this file.
+ */
+export type GameType = string;
 
 export interface FormattedAnswer extends WordItem {
   formattedDefinition: string;

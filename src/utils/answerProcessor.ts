@@ -1,7 +1,7 @@
 import { WordItem } from '../db';
-import { FormattedAnswer, ErrorMessage, HintMessage, GameType } from '../types/gameTypes';
+import { FormattedAnswer, ErrorMessage, HintMessage } from '../types/gameTypes';
 import { CONFIG } from '../config/config';
-import { isValidLetterCombination } from './GameUtils';
+import { GameTypeDefinition } from '../gameTypes';
 
 export const formatAnswer = (item: WordItem): FormattedAnswer => {
   let takesS = '';
@@ -25,11 +25,15 @@ export const formatAnswer = (item: WordItem): FormattedAnswer => {
   };
 };
 
+/**
+ * Process a user's answer submission using the game type definition
+ * for game-specific matching and validation.
+ */
 export const processAnswer = (
   input: string,
   answerSet: FormattedAnswer[],
   displayedAnswers: FormattedAnswer[],
-  isBingoStem: boolean = false
+  gameDef: GameTypeDefinition
 ): { newAnswer: FormattedAnswer | null; isValid: boolean; isRepeated: boolean; message: ErrorMessage | HintMessage | null } => {
   const uppercaseInput = input.toUpperCase();
 
@@ -39,24 +43,21 @@ export const processAnswer = (
 
   const currentScenario = answerSet[0];
 
-  if (isBingoStem) {
-    if (!isValidLetterCombination(uppercaseInput, currentScenario.root, currentScenario.subtopic)) {
-      return { 
-        newAnswer: null, 
-        isValid: false, 
+  // Game-specific input validation (e.g., letter combination check for BingoStem)
+  if (gameDef.validateInput) {
+    const validationResult = gameDef.validateInput(uppercaseInput, currentScenario);
+    if (validationResult && !validationResult.valid) {
+      return {
+        newAnswer: null,
+        isValid: false,
         isRepeated: false,
-        message: {
-          text: `Entry must include only the letters <span class="root">${currentScenario.root.toUpperCase()}</span> + <span class="root">${currentScenario.subtopic.toUpperCase()}</span>.`
-        }
+        message: validationResult.message ? { text: validationResult.message } : null,
       };
     }
   }
 
-  const matchingAnswer = answerSet.find(item => 
-    isBingoStem 
-      ? item.answerWord.toUpperCase() === uppercaseInput
-      : item.answer.toUpperCase() === uppercaseInput
-  );
+  // Use the game type's matchAnswer to find a matching answer
+  const matchingAnswer = answerSet.find(item => gameDef.matchAnswer(uppercaseInput, item));
 
   if (matchingAnswer) {
     const isAlreadyDisplayed = displayedAnswers.some(
@@ -64,7 +65,7 @@ export const processAnswer = (
     );
 
     if (!isAlreadyDisplayed) {
-      return { 
+      return {
         newAnswer: matchingAnswer,
         isValid: true,
         isRepeated: false,
@@ -80,10 +81,11 @@ export const processAnswer = (
     }
   }
 
+  // No match: build an invalid answer display using the game type's word builder.
   const lexiconName = CONFIG.LEXICON_NAME || "this lexicon";
   const invalidAnswer: FormattedAnswer = {
     ...currentScenario,
-    answerWord: isBingoStem ? uppercaseInput : (currentScenario.subtopic === 'before' ? uppercaseInput + currentScenario.root : currentScenario.root + uppercaseInput),
+    answerWord: gameDef.buildAnswerWord(uppercaseInput, currentScenario),
     formattedDefinition: `Not a valid word in ${lexiconName}`,
     answer: uppercaseInput,
     takesS: ''
@@ -94,9 +96,9 @@ export const processAnswer = (
   );
 
   if (!isAlreadyDisplayed) {
-    return { 
-      newAnswer: invalidAnswer, 
-      isValid: false, 
+    return {
+      newAnswer: invalidAnswer,
+      isValid: false,
       isRepeated: false,
       message: { text: invalidAnswer.formattedDefinition }
     };

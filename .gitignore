@@ -28,3 +28,8 @@ dist-ssr
 **/old
 .bak
 working
+.cursorindexingignore
+.eslintrc.cjs
+.specstory/
+.vite/
+README-vite.md
